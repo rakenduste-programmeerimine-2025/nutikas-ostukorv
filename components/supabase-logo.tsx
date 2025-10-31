@@ -98,5 +98,5 @@ export function SupabaseLogo() {
         </clipPath>
       </defs>
     </svg>
-  );
+  )
 }
