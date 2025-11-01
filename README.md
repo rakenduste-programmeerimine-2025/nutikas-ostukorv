@@ -21,16 +21,16 @@ This app allows users to compare prices of food products from different stores a
 
 ## Features
 
--Search for products
--Compare prices of groceries across different store chains
--Create shopping lists
--Order list by category (food type)
--Export shopping lists to phone
+- Search for products
+- Compare prices of groceries across different store chains
+- Create shopping lists
+- Order list by category (food type)
+- Export shopping lists to phone
 
 ## Supporting functionality
 
--Login/auth
--API router
+- Login/auth
+- API router
 
 ## Demo
 
