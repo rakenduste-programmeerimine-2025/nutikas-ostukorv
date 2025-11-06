@@ -19,6 +19,12 @@
 
 This app allows users to compare prices of food products from different stores and also create a shopping list which can be exported into the users phone for example.
 
+## Team members
+
+- Karl Luberg
+- 
+- 
+
 ## Features
 
 - Search for products
