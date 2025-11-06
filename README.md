@@ -23,7 +23,7 @@ This app allows users to compare prices of food products from different stores a
 
 - Karl Luberg
 - Rico Paum
--
+- Rene Pruul
 
 ## Features
 
