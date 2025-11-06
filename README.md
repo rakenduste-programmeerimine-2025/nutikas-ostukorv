@@ -22,8 +22,8 @@ This app allows users to compare prices of food products from different stores a
 ## Team members
 
 - Karl Luberg
-- 
-- 
+- Rico Paum
+-
 
 ## Features
 
