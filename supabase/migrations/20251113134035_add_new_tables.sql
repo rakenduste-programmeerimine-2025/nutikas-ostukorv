@@ -32,6 +32,7 @@ grant insert on table "public"."product" to "authenticated";
 
 grant references on table "public"."product" to "authenticated";
 
+
 grant select on table "public"."product" to "authenticated";
 
 grant trigger on table "public"."product" to "authenticated";
@@ -53,5 +54,3 @@ grant trigger on table "public"."product" to "service_role";
 grant truncate on table "public"."product" to "service_role";
 
 grant update on table "public"."product" to "service_role";
-
-
