@@ -17,7 +17,13 @@
 </p>
 <br/>
 
+## Our project
+
 This app allows users to compare prices of food products from different stores and also create a shopping list which can be exported into the users phone for example.
+
+## Figma lowfi framework
+
+[View Figma Low-Fi Framework](https://www.figma.com/design/v0pdSOdQgCzC16nLmwt6GS/Nutikas-ostukorv-lowfi?node-id=0-1&t=uDj3V0WHdXozQXel-1)
 
 ## Team members
 
