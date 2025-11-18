@@ -1,98 +1,91 @@
-import requests
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+import asyncio
+from playwright.async_api import async_playwright
 import csv
 import time
 
-BASE_URL = "https://www.rimi.ee"
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; EducationalScraper/1.0)"
-}
+URL = "https://www.rimi.ee/epood/ee/tooted/liha--ja-kalatooted/hakkliha/c/SH-8-2"
+CATEGORY_ID = 3
+STORE_ID = 2
+
+async def scrape_rimi():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(
+            headless=True,
+            args=["--no-sandbox", "--disable-dev-shm-usage"]
+        )
+        page = await browser.new_page(
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                " AppleWebKit/537.36 (KHTML, like Gecko)"
+                " Chrome/120.0.0.0 Safari/537.36"
+            )
+        )
+
+        await page.add_init_script(
+            """Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"""
+        )
+
+        current_url = URL
+        products = []
+
+        while True:
+            await page.goto(current_url, wait_until="networkidle")
+
+            for _ in range(3):
+                await page.mouse.wheel(0, 2000)
+                await asyncio.sleep(0.5)
+
+            cards = page.locator(".card")
+            await cards.first.wait_for(timeout=60000)
+            count = await cards.count()
+
+            for i in range(count):
+                card = cards.nth(i)
+
+                name_loc = card.locator(".card__name")
+                if await name_loc.count() == 0:
+                    continue
+                name = (await name_loc.inner_text()).strip()
+
+                euro_loc = card.locator(".card__price span")
+                cents_loc = card.locator(".card__price sup")
+                if await euro_loc.count() == 0:
+                    continue
+
+                euro = (await euro_loc.inner_text()).strip()
+                cents = (await cents_loc.inner_text()).strip() if await cents_loc.count() else "00"
+
+                try:
+                    price = float(f"{euro}.{cents}")
+                except:
+                    continue
+
+                products.append([CATEGORY_ID, name, price, STORE_ID])
+
+            next_btn = page.locator("a[aria-label='Järgmine']")
+            if not await next_btn.count():
+                break
+
+            href = await next_btn.get_attribute("href")
+            if not href:
+                break
+
+            current_url = "https://www.rimi.ee" + href
+            time.sleep(1)
+
+        await browser.close()
+    return products
 
 
-def parse_price(euro_text: str, cents_text: str) -> float:
-    """Convert Rimi price parts into float."""
-    try:
-        clean = f"{euro_text}.{cents_text}".replace(" ", "").replace(",", ".")
-        return float(clean)
-    except:
-        return None
+async def save_to_csv():
+    products = await scrape_rimi()
 
-
-def get_category_name(soup):
-    h1 = soup.find("h1")
-    return h1.get_text(strip=True) if h1 else "Unknown category"
-
-
-def get_products_from_page(full_url: str):
-    """Scrape one Rimi page and extract products + pagination links."""
-    response = requests.get(full_url, headers=HEADERS)
-    if response.status_code != 200:
-        return [], [], "Unknown category"
-
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    category = get_category_name(soup)
-
-    products = []
-    for product in soup.select(".card__details"):
-        name_el = product.select_one(".card__name")
-        price_el = product.select_one(".card__price")
-
-        if not name_el or not price_el:
-            continue
-
-        euro = price_el.select_one("span")
-        cents = price_el.select_one("sup")
-
-        name = name_el.get_text(strip=True)
-        euro_text = euro.get_text(strip=True) if euro else "0"
-        cents_text = cents.get_text(strip=True) if cents else "00"
-
-        price = parse_price(euro_text, cents_text)
-
-        products.append([category, name, price])
-
-    pagination_links = [
-        urljoin(BASE_URL, a["href"])
-        for a in soup.select("li.pagination__item a[href]")
-    ]
-
-    return products, pagination_links, category
-
-
-def scrape_all_pages(start_path: str):
-    visited = set()
-    to_visit = [urljoin(BASE_URL, start_path)]
-    all_products = []
-    category_name = "Unknown category"
-
-    while to_visit:
-        current_url = to_visit.pop(0)
-        if current_url in visited:
-            continue
-
-        products, pagination_links, category_name = get_products_from_page(current_url)
-        all_products.extend(products)
-        visited.add(current_url)
-
-        for link in pagination_links:
-            if link not in visited and link not in to_visit:
-                to_visit.append(link)
-
-        time.sleep(1)
-
-    return all_products, category_name
-
-
-def scrape_rimi_to_csv(category_path: str):
-    products, category_name = scrape_all_pages(category_path)
-
-    filename = "rimi_products.csv"
-    with open(filename, "w", newline="", encoding="utf-8") as f:
+    with open("rimi_products.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["category", "name", "price"])
+        writer.writerow(["category_id", "name", "price", "store_id"])
         writer.writerows(products)
 
-    print(f"Done (RIMI) — {len(products)} products scraped into {filename}!")
-    print(f"Category: {category_name}")
+    print(f"Done {len(products)} products scraped into rimi_products.csv")
+
+
+await save_to_csv()
