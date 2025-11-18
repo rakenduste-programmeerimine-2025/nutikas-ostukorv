@@ -1,6 +1,7 @@
 import { EnvVarWarning } from '@/components/env-var-warning'
 import { AuthButton } from '@/components/auth-button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
+import Link from 'next/link'
 import { hasEnvVars } from '@/lib/utils'
 
 export default function StoresPage() {
@@ -19,6 +20,12 @@ export default function StoresPage() {
         </nav>
 
         <div className="w-full max-w-5xl p-6">
+          <div className="w-full flex justify-center items-center gap-3 mb-8">
+            <button className="px-4 py-2 rounded-md bg-black text-white border">Poenimekiri</button>
+            <Link href="/" className="px-4 py-2 rounded-md bg-white text-black border">
+              Otsing
+            </Link>
+          </div>
           <h1 className="text-center text-3xl mb-8">Kõik poed</h1>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
