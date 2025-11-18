@@ -23,6 +23,9 @@ export default function Home() {
               <Link href="/stores" className="px-4 py-2 rounded-md bg-white border">
                 Poenimekiri
               </Link>
+              <Link href="/data" className="px-4 py-2 rounded-md bg-white border">
+                Andmed
+              </Link>
               <button className="px-4 py-2 rounded-md bg-foreground text-background">Otsing</button>
             </div>
 
