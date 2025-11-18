@@ -12,7 +12,7 @@ def parse_price(price_text: str) -> float:
         return None
 
 def scrape_coop():
-    url = "https://coophaapsalu.ee/tootekategooria/liha-ja-kalatooted/hakkliha/"
+    url = "https://coophaapsalu.ee/tootekategooria/puu-ja-koogivili/puuvili-ja-marjad/"
 
     headers = {"User-Agent": "Mozilla/5.0"}
 
