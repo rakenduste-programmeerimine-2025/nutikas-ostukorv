@@ -8,7 +8,7 @@ def parse_price(price_text: str) -> float:
     )
     try:
         return float(clean)
-    except:
+    except
         return None
 
 def scrape_coop():
