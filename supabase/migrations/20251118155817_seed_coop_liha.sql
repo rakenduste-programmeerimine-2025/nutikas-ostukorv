@@ -1,4 +1,6 @@
+-- -----------------------
 -- Ensure UUID function exists
+-- -----------------------
 CREATE EXTENSION
 IF NOT EXISTS "uuid-ossp";
 
@@ -47,3 +49,36 @@ CROSS JOIN (
 ) AS p(product_name, price, store_id)
 WHERE c.name = 'liha'
 ON CONFLICT DO NOTHING;
+
+-- -----------------------
+-- TODO: Add products for Rimi (store_id = 2) and Selver (store_id = 3) if desired
+-- -----------------------
+-- Example:
+-- INSERT INTO public.product (category_id, name, price, store_id)
+-- SELECT c.id, p.product_name, p.price, p.store_id
+-- FROM public.category c
+-- CROSS JOIN (
+--     VALUES
+--       ('Rimi product 1', 4.99, 2),
+--       ('Rimi product 2', 3.49, 2)
+-- ) AS p(product_name, price, store_id)
+-- WHERE c.name = 'liha'
+-- ON CONFLICT DO NOTHING;
+
+-- -----------------------
+-- Enable RLS and allow public select
+-- -----------------------
+
+-- Store table
+ALTER TABLE public.store ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select" ON public.store
+FOR
+SELECT
+    USING (true);
+
+-- Product table
+ALTER TABLE public.product ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select" ON public.product
+FOR
+SELECT
+    USING (true);
