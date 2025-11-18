@@ -2,14 +2,19 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 
+CATEGORY_ID = 1
+
+STORE_ID = 1
+
 def parse_price(price_text: str) -> float:
     clean = (
         price_text.replace("€", "").replace(" ", "").replace(",", ".").strip()
     )
     try:
         return float(clean)
-    except
+    except:
         return None
+
 
 def scrape_coop():
     url = "https://coophaapsalu.ee/tootekategooria/puu-ja-koogivili/puuvili-ja-marjad/"
@@ -18,9 +23,6 @@ def scrape_coop():
 
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, "lxml")
-
-    category_el = soup.find("h1", class_="woocommerce-products-header__title")
-    category = category_el.text.strip() if category_el else "Unknown category"
 
     products = soup.select("ul.products li.product")
 
@@ -35,14 +37,15 @@ def scrape_coop():
 
         price = parse_price(price_text)
 
-        rows.append([category, name, price])
+        rows.append([CATEGORY_ID, name, price, STORE_ID])
 
     with open("coop_products.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["category", "name", "price"])
+        writer.writerow(["category_id", "name", "price", "store_id"])
         writer.writerows(rows)
 
-    print(f"Done (COOP) — {len(rows)} products scraped!")
+    print(f"Done (COOP) — {len(rows)} products scraped into coop_products.csv")
+
 
 if __name__ == "__main__":
     scrape_coop()
