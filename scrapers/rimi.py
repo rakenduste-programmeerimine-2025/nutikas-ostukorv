@@ -4,7 +4,9 @@ import csv
 import time
 
 URL = "https://www.rimi.ee/epood/ee/tooted/liha--ja-kalatooted/hakkliha/c/SH-8-2"
+
 CATEGORY_ID = 3
+
 STORE_ID = 2
 
 async def scrape_rimi():
