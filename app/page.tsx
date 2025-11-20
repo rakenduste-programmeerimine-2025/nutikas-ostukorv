@@ -1,8 +1,6 @@
-import { EnvVarWarning } from '@/components/env-var-warning'
 import { AuthButton } from '@/components/auth-button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import { hasEnvVars } from '@/lib/utils'
 
 export default function Home() {
   return (
@@ -13,19 +11,20 @@ export default function Home() {
             <div className="flex gap-5 items-center font-semibold">
               <span className="text-xl">Nutikas ostukorv</span>
             </div>
-            {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
+            {<AuthButton />}
           </div>
         </nav>
 
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
           <div className="w-full flex flex-col items-center gap-6">
             <div className="flex items-center gap-3">
-              <Link href="/stores" className="px-4 py-2 rounded-md bg-white border">
-                Poenimekiri
-              </Link>
               <Link href="/data" className="px-4 py-2 rounded-md bg-white border">
                 Andmed
               </Link>
+              <Link href="/stores" className="px-4 py-2 rounded-md bg-white border">
+                Poenimekiri
+              </Link>
+
               <button className="px-4 py-2 rounded-md bg-foreground text-background">Otsing</button>
             </div>
 
