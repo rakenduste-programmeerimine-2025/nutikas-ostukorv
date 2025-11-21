@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import ProductCard from '@/components/product-card'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,16 +20,23 @@ export default async function Page() {
     return <p>Error loading data. Check console.</p>
   }
 
+  const storesMap = Object.fromEntries((stores ?? []).map((s: any) => [s.id, s]))
+  const categoriesMap = Object.fromEntries((categories ?? []).map((c: any) => [c.id, c]))
+
   return (
     <main style={{ padding: '32px' }}>
-      <h1>Stores</h1>
-      <pre>{JSON.stringify(stores, null, 2)}</pre>
+      <h1 className="mb-4">Products</h1>
 
-      <h1>Categories</h1>
-      <pre>{JSON.stringify(categories, null, 2)}</pre>
-
-      <h1>Products</h1>
-      <pre>{JSON.stringify(products, null, 2)}</pre>
+      <div className="grid grid-cols-5 gap-4">
+        {(products ?? []).map((p: any) => (
+          <ProductCard
+            key={p.id}
+            product={p}
+            categoryName={categoriesMap[p.category_id]?.name}
+            storeName={storesMap[p.store_id]?.name}
+          />
+        ))}
+      </div>
     </main>
   )
 }
