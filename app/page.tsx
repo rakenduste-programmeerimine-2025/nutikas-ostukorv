@@ -1,19 +1,19 @@
 import { AuthButton } from '@/components/auth-button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
+import Navbar from '@/components/ui/navbar'
 
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-14 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-20">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <span className="text-xl">Nutikas ostukorv</span>
-            </div>
-            {<AuthButton />}
-          </div>
-        </nav>
+        <Navbar
+          links={[
+            { href: '/data', label: 'Andmed' },
+            { href: '/stores', label: 'Poenimekiri' },
+          ]}
+          right={<AuthButton />}
+        />
 
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
           <div className="w-full flex flex-col items-center gap-6">

@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import ProductCard from '@/components/product-card'
+import Navbar from '@/components/ui/navbar'
+import { AuthButton } from '@/components/auth-button'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,8 +26,14 @@ export default async function Page() {
   const categoriesMap = Object.fromEntries((categories ?? []).map((c: any) => [c.id, c]))
 
   return (
-    <main style={{ padding: '32px' }}>
-      <h1 className="mb-4">Products</h1>
+    <main>
+      <Navbar
+        links={[
+          { href: '/data', label: 'Andmed' },
+          { href: '/stores', label: 'Poenimekiri' },
+        ]}
+        right={<AuthButton />}
+      />
 
       <div className="grid grid-cols-5 gap-4">
         {(products ?? []).map((p: any) => (
