@@ -2,6 +2,9 @@ import asyncio
 from playwright.async_api import async_playwright
 import csv
 
+CATEGORY_ID = 5     
+STORE_ID = 1        
+
 def parse_price(price_text: str) -> float:
     clean = (
         price_text.replace("€", "").replace(" ", "").replace(",", ".").strip()
@@ -21,11 +24,6 @@ async def scrape_selver():
         await page.goto(url)
         await page.wait_for_selector(".ProductCard__info")
 
-        try:
-            category = (await page.locator("h1").first.inner_text()).strip()
-        except:
-            category = "Unknown category"
-
         cards = await page.query_selector_all(".ProductCard__info")
 
         rows = []
@@ -38,11 +36,11 @@ async def scrape_selver():
             price_text = (await price_el.inner_text()).split("\n")[0].strip()
 
             price = parse_price(price_text)
-            rows.append([category, name, price])
+            rows.append([CATEGORY_ID, name, price, STORE_ID])
 
         with open("selver_products.csv", "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["category", "name", "price"])
+            writer.writerow(["category_id", "name", "price", "store_id"])
             writer.writerows(rows)
 
         print(f"Done (SELVER) — {len(rows)} products scraped!")
