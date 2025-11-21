@@ -6,7 +6,6 @@ import time
 URL = "https://www.rimi.ee/epood/ee/tooted/liha--ja-kalatooted/hakkliha/c/SH-8-2"
 
 CATEGORY_ID = 3
-
 STORE_ID = 2
 
 async def scrape_rimi():
@@ -87,7 +86,7 @@ async def save_to_csv():
         writer.writerow(["category_id", "name", "price", "store_id"])
         writer.writerows(products)
 
-    print(f"Done {len(products)} products scraped into rimi_products.csv")
+    print(f"Done! Scraped {len(products)} products into rimi_products.csv")
 
 
 await save_to_csv()
