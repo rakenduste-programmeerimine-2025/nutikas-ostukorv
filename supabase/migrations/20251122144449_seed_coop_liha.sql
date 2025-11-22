@@ -19,12 +19,6 @@ ON CONFLICT
 -- -----------------------
 -- Category: liha
 -- -----------------------
-INSERT INTO public.category
-    (name)
-VALUES
-    ('liha')
-ON CONFLICT
-(name) DO NOTHING;
 
 -- -----------------------
 -- Products for Coop (store_id = 1)
@@ -77,7 +71,7 @@ CROSS JOIN (
         ('RLK Piprane seakaelakarbonaad 500g', 7.49, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/10/4740003018003.png'),
         ('RR Ahjuvorstid röstitud küüslauguga 400g', 4.19, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/10/4740296003908.png')
 ) AS p(product_name, price, store_id, image_url)
-WHERE c.name = 'liha'
+WHERE c.name = 'lihatooted'
 ON CONFLICT DO NOTHING;
 
 -- -----------------------
