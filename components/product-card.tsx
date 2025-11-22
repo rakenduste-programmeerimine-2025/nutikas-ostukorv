@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Card, CardContent, CardFooter } from './ui/card'
 import { Button } from './ui/button'
+import { useCart } from '@/components/cart/cart-context'
 
 export interface Product {
   id: number
@@ -25,6 +26,14 @@ export function ProductCard({ product, categoryName, storeName, onAdd }: Product
     Number(product.price)
   )
 
+  const cart = (() => {
+    try {
+      return useCart()
+    } catch {
+      return null
+    }
+  })()
+
   return (
     <Card className="w-full overflow-hidden relative pb-12">
       <div className="relative">
@@ -40,7 +49,10 @@ export function ProductCard({ product, categoryName, storeName, onAdd }: Product
           variant="default"
           size="icon"
           className="absolute top-3 right-3 rounded-full shadow-md bg-green-500 hover:bg-green-600 text-white"
-          onClick={() => onAdd?.(product)}
+          onClick={() => {
+            onAdd?.(product)
+            cart?.addItem(product as any)
+          }}
           aria-label={`Add ${product.name}`}
         >
           +
