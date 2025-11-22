@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Card, CardContent, CardTitle } from "@/components/ui/card"
+import { useState } from 'react'
+import { Card, CardContent, CardTitle } from '@/components/ui/card'
 
 export default function ProductModalWrapper() {
   const [open, setOpen] = useState(false)
@@ -26,23 +26,22 @@ export default function ProductModalWrapper() {
 
       {open && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
           onClick={() => setOpen(false)}
         >
           <div
-            className="bg-white rounded-xl p-6 w-full max-w-md"
-            onClick={(e) => e.stopPropagation()}
+            className="bg-card text-card-foreground rounded-xl p-6 w-full max-w-md shadow-xl"
+            onClick={e => e.stopPropagation()}
           >
             <h2 className="text-2xl font-semibold mb-2">Toode</h2>
+
             <p className="text-lg font-medium">Hind</p>
 
-            <p className="text-muted-foreground mt-4">
-              Kirjeldus.
-            </p>
+            <p className="mt-4">Kirjeldus.</p>
 
             <button
               onClick={() => setOpen(false)}
-              className="mt-6 px-4 py-2 bg-black text-white rounded-lg"
+              className="mt-6 px-4 py-2 bg-primary text-primary-foreground rounded-lg"
             >
               Sulge
             </button>
