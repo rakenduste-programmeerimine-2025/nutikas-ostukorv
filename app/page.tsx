@@ -2,6 +2,7 @@ import { AuthButton } from '@/components/auth-button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import Navbar from '@/components/ui/navbar'
+import ProductModalWrapper from '@/components/product-modal-wrapper'
 
 export default function Home() {
   return (
@@ -44,17 +45,7 @@ export default function Home() {
           <section className="w-full">
             <h3 className="text-center text-2xl mb-8">Populaarsemad tooted</h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i} className="">
-                  <div className="h-40 bg-muted-foreground/40 rounded-t-xl" />
-                  <CardContent>
-                    <CardTitle>Toode</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-2">Lühikirjeldus</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ProductModalWrapper />
           </section>
         </div>
       </div>
