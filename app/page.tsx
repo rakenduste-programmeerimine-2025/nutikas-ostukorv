@@ -26,6 +26,9 @@ export default function Home() {
               </Link>
 
               <button className="px-4 py-2 rounded-md bg-foreground text-background">Otsing</button>
+              <Link href="/browse" className="px-4 py-2 rounded-md bg-white border">
+                Tooted
+              </Link>
             </div>
 
             <h2 className="text-2xl font-medium">Sisesta toote nimi</h2>
