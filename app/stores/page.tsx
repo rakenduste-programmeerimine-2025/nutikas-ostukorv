@@ -13,22 +13,12 @@ export default function StoresPage() {
           links={[
             { href: '/data', label: 'Andmed' },
             { href: '/stores', label: 'Poenimekiri' },
+            { href: '/', label: 'Otsing' },
           ]}
           right={<AuthButton />}
         />
-
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
-          <div className="flex items-center gap-3">
-            <Link href="/data" className="px-4 py-2 rounded-md bg-white border">
-              Andmed
-            </Link>
-            <button className="px-4 py-2 rounded-md bg-foreground text-background">
-              Poenimekiri
-            </button>
-            <Link href="/" className="px-4 py-2 rounded-md bg-white border">
-              Otsing
-            </Link>
-          </div>
+          {/* Removed duplicate link row for consistency */}
         </div>
         <h1 className="text-center text-3xl mb-8">Kõik poed</h1>
 

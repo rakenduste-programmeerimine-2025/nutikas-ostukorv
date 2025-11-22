@@ -7,13 +7,7 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-14 items-center">
-        <Navbar
-          links={[
-            { href: '/data', label: 'Andmed' },
-            { href: '/stores', label: 'Poenimekiri' },
-          ]}
-          right={<AuthButton />}
-        />
+        <Navbar right={<AuthButton />} />
 
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
           <div className="w-full flex flex-col items-center gap-6">
