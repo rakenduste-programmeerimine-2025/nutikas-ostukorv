@@ -13,15 +13,27 @@ export default function Home() {
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
           <div className="w-full flex flex-col items-center gap-6">
             <div className="flex items-center gap-3">
-              <Link href="/data" className="px-4 py-2 rounded-md bg-white border">
+              <Link
+                href="/data"
+                className="px-4 py-2 rounded-md bg-card text-card-foreground border"
+              >
                 Andmed
               </Link>
-              <Link href="/stores" className="px-4 py-2 rounded-md bg-white border">
+              <Link
+                href="/stores"
+                className="px-4 py-2 rounded-md bg-card text-card-foreground border"
+              >
                 Poenimekiri
               </Link>
 
-              <button className="px-4 py-2 rounded-md bg-foreground text-background">Otsing</button>
-              <Link href="/browse" className="px-4 py-2 rounded-md bg-white border">
+              <button className="px-4 py-2 rounded-md bg-primary text-primary-foreground">
+                Otsing
+              </button>
+
+              <Link
+                href="/browse"
+                className="px-4 py-2 rounded-md bg-card text-card-foreground border"
+              >
                 Tooted
               </Link>
             </div>
@@ -100,7 +112,6 @@ export default function Home() {
 
           <section className="w-full">
             <h3 className="text-center text-2xl mb-8">Populaarsed tooted</h3>
-
             <ProductModalWrapper />
           </section>
         </div>
