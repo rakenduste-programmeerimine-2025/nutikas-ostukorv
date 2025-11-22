@@ -7,6 +7,8 @@ export default function BrowseProducts() {
   const [page, setPage] = React.useState(1)
   const [limit, setLimit] = React.useState(12)
   const [products, setProducts] = React.useState<Product[]>([])
+  const [categories, setCategories] = React.useState<any[]>([])
+  const [stores, setStores] = React.useState<any[]>([])
   const [total, setTotal] = React.useState(0)
   const [loading, setLoading] = React.useState(false)
   const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)))
@@ -20,6 +22,8 @@ export default function BrowseProducts() {
         if (canceled) return
         setProducts(data.products ?? [])
         setTotal(data.total ?? 0)
+        setCategories(data.categories ?? [])
+        setStores(data.stores ?? [])
       })
       .catch(() => {
         if (canceled) return
@@ -67,7 +71,20 @@ export default function BrowseProducts() {
           ? Array.from({ length: limit }).map((_, i) => (
               <div key={i} className="h-40 bg-muted-foreground/20 rounded" />
             ))
-          : products.map(p => <ProductCard key={p.id} product={p} />)}
+          : products.map(p => {
+              const categoriesMap = Object.fromEntries(
+                (categories ?? []).map((c: any) => [c.id, c])
+              )
+              const storesMap = Object.fromEntries((stores ?? []).map((s: any) => [s.id, s]))
+              return (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  categoryName={categoriesMap[String(p.category_id)]?.name}
+                  storeName={storesMap[String(p.store_id)]?.name}
+                />
+              )
+            })}
       </div>
 
       <div className="flex items-center justify-center gap-3 mt-6">
