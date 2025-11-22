@@ -63,12 +63,17 @@ export default function Home() {
                   {
                     name: 'Piimatooted',
                     image:
-                      'https://i0.wp.com/www.kabilaifarm.com/wp-content/uploads/2023/06/Understanding-the-Different-Types-of-Dairy-Products.jpg',
+                      'https://nutritionsource.hsph.harvard.edu/wp-content/uploads/2020/10/shutterstock_1232966839.jpg',
                   },
                   {
                     name: 'Köögiviljad',
                     image:
                       'https://images.delfi.ee/media-api-image-cropper/v1/b8fb1020-b7e4-11eb-b469-85a469adc0e4.jpg?noup&w=1200&h=711&ch=0.8065&cw=1&cx=0&cy=0.0224&r=16:9',
+                  },
+                  {
+                    name: 'Puuviljad',
+                    image:
+                      'https://res.cloudinary.com/hz3gmuqw6/image/upload/c_fill,h_450,q_auto,w_710/f_auto/wip--21-healthiest-fruits-to-eat-in-2024-php3RGRfc',
                   },
                   {
                     name: 'Liha',
@@ -93,6 +98,26 @@ export default function Home() {
                     name: 'Maiustused',
                     image:
                       'https://www.sweets4me.co.uk/cdn/shop/collections/traditionalloose.jpg?v=1634895788',
+                  },
+                  {
+                    name: 'Snäkid',
+                    image:
+                      'https://media13.s-nbcnews.com/i/mpx/2704722219/2024_09/1726148100989_tdy_food_9a_snacking_240912_1920x1080-0hv5dj.jpg',
+                  },
+                  {
+                    name: 'Maitseained',
+                    image:
+                      'https://tervisliktoitumine.ee/wp-content/uploads/2017/08/maitseained-1.jpg',
+                  },
+                  {
+                    name: 'Kuivained',
+                    image:
+                      'https://images.delfi.ee/media-api-image-cropper/v1/450f3675-3896-4106-8b9d-4fc642c97cd7.jpg?noup&w=1200&h=711&ch=0.8438&cw=1&cx=0&cy=0.1029&r=16:9',
+                  },
+                  {
+                    name: 'Kastmed',
+                    image:
+                      'https://www.mashed.com/img/gallery/delicious-homemade-sauces-that-will-upgrade-any-meal/intro-1615237740.jpg',
                   },
                 ].map((cat, i) => (
                   <Card key={i} className="min-w-[200px] cursor-pointer hover:shadow-lg transition">
