@@ -42,8 +42,35 @@ export default function Home() {
             </div>
           </div>
 
+          <section className="w-full mt-16">
+            <h3 className="text-center text-2xl mb-8">Kategooriad</h3>
+
+            <div className="w-full overflow-x-auto">
+              <div className="flex gap-6 px-1 pb-3">
+                {[
+                  'Piimatooted',
+                  'Köögiviljad',
+                  'Liha',
+                  'Puuviljad',
+                  'Joogid',
+                  'Sügavkülmutatud',
+                  'Pagaritooted',
+                  'Maiustused',
+                ].map((name, i) => (
+                  <Card key={i} className="min-w-[200px] cursor-pointer hover:shadow-lg transition">
+                    <div className="h-32 bg-muted-foreground/40 rounded-t-xl" />
+                    <CardContent>
+                      <CardTitle>{name}</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-2">Kategooria kirjeldus</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </section>
+
           <section className="w-full">
-            <h3 className="text-center text-2xl mb-8">Populaarsemad tooted</h3>
+            <h3 className="text-center text-2xl mb-8">Populaarsed tooted</h3>
 
             <ProductModalWrapper />
           </section>
