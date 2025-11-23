@@ -28,7 +28,6 @@ export async function GET(req: Request) {
       { data: stores, error: storeErr },
     ] = await Promise.all([
       productQuery,
-      supabase.from('product').select('*', { count: 'exact' }).range(from, to),
       supabase.from('category').select('*'),
       supabase.from('store').select('*'),
     ])

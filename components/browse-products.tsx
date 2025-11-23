@@ -39,11 +39,14 @@ export default function BrowseProducts() {
     return () => {
       canceled = true
     }
-  }, [page, limit])
+  }, [page, limit, selectedCategory])
 
   function goto(p: number) {
     setPage(Math.min(Math.max(1, p), totalPages))
   }
+
+  const categoriesMap = Object.fromEntries((categories ?? []).map((c: any) => [String(c.id), c]))
+  const storesMap = Object.fromEntries((stores ?? []).map((s: any) => [String(s.id), s]))
 
   return (
     <div className="w-full">
@@ -93,36 +96,14 @@ export default function BrowseProducts() {
           ? Array.from({ length: limit }).map((_, i) => (
               <div key={i} className="h-40 bg-muted-foreground/20 rounded" />
             ))
-          : (() => {
-              const categoriesMap = Object.fromEntries(
-                (categories ?? []).map((c: any) => [String(c.id), c])
-              )
-              const storesMap = Object.fromEntries(
-                (stores ?? []).map((s: any) => [String(s.id), s])
-              )
-              return products.map(p => (
-                <ProductCard
-                  key={p.id}
-                  product={p}
-                  categoryName={categoriesMap[String((p as any).category_id)]?.name}
-                  storeName={storesMap[String((p as any).store_id)]?.name}
-                />
-              ))
-            })()}
-          : products.map(p => {
-              const categoriesMap = Object.fromEntries(
-                (categories ?? []).map((c: any) => [c.id, c])
-              )
-              const storesMap = Object.fromEntries((stores ?? []).map((s: any) => [s.id, s]))
-              return (
-                <ProductCard
-                  key={p.id}
-                  product={p}
-                  categoryName={categoriesMap[String(p.category_id)]?.name}
-                  storeName={storesMap[String(p.store_id)]?.name}
-                />
-              )
-            })}
+          : products.map(p => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                categoryName={categoriesMap[String((p as any).category_id)]?.name}
+                storeName={storesMap[String((p as any).store_id)]?.name}
+              />
+            ))}
       </div>
 
       <div className="flex items-center justify-center gap-3 mt-6">
