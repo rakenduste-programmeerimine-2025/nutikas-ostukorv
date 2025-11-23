@@ -80,14 +80,15 @@ export default function Home() {
                   },
                   {
                     name: 'Liha',
-                    slug: 'liha',
+                    slug: 'lihatooted',
                     image:
                       'https://www-assets.liebherr.com/media/bu-media/lhbu-hau/global/freshmag/meat/fleisch___biofleisch/is-meat-healthy-liebherr-freshmag-169-600.webp',
                   },
                   {
                     name: 'Joogid',
                     slug: 'joogid',
-                    image: 'https://bakewithshivesh.com/wp-content/uploads/2022/04/IMG_9331-scaled.jpg',
+                    image:
+                      'https://bakewithshivesh.com/wp-content/uploads/2022/04/IMG_9331-scaled.jpg',
                   },
                   {
                     name: 'Külmutatud',
@@ -135,7 +136,11 @@ export default function Home() {
                   <Link key={i} href={`/category/${cat.slug}`}>
                     <Card className="min-w-[200px] cursor-pointer hover:shadow-lg transition">
                       <div className="h-32 bg-muted-foreground/40 rounded-t-xl overflow-hidden">
-                        <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                        <img
+                          src={cat.image}
+                          alt={cat.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
 
                       <CardContent>

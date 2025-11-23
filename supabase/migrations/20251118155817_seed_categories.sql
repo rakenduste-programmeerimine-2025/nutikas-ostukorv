@@ -1,18 +1,18 @@
 INSERT INTO public.category
-    (name)
+    (name, slug)
 VALUES
-    ('piimatooted'),
-    ('koogiviljad'),
-    ('lihatooted'),
-    ('joogid'),
-    ('kulmutatud'),
-    ('pagaritooted'),
-    ('maiustused'),
-    ('puuviljad'),
-    ('maitseained'),
-    ('snakid'),
-    ('kuivained'),
-    ('kastmed'),
-    ('muu')
+    ('piimatooted', 'piimatooted'),
+    ('koogiviljad', 'koogiviljad'),
+    ('lihatooted', 'lihatooted'),
+    ('joogid', 'joogid'),
+    ('kulmutatud', 'kulmutatud'),
+    ('pagaritooted', 'pagaritooted'),
+    ('maiustused', 'maiustused'),
+    ('puuviljad', 'puuviljad'),
+    ('maitseained', 'maitseained'),
+    ('snakid', 'snakid'),
+    ('kuivained', 'kuivained'),
+    ('kastmed', 'kastmed'),
+    ('muu', 'muu')
 ON CONFLICT
-(name) DO NOTHING;
+(slug) DO NOTHING;

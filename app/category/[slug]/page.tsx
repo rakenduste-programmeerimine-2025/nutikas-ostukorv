@@ -1,95 +1,55 @@
 import { notFound } from 'next/navigation'
+import Navbar from '@/components/ui/navbar'
+import { AuthButton } from '@/components/auth-button'
+import { createClient } from '@/lib/supabase/server'
+import ProductCard from '@/components/product-card'
 
-type CategoryConfig = {
-  title: string
-  description: string
-  filters: string[]
-}
+export default async function CategoryPage({ params }: { params: { slug: string } }) {
+  // `params` may be a Promise in some Next.js setups — unwrap it before use
+  const { slug } = (await params) as { slug: string }
 
-const categories: Record<string, CategoryConfig> = {
-  piimatooted: {
-    title: 'Piimatooted',
-    description: 'Kõik piimatooted ja sellega seotud kaubad.',
-    filters: ['Piimad', 'Juustud', 'Jogurtid'],
-  },
-  koogiviljad: {
-    title: 'Köögiviljad',
-    description: 'Värsked köögiviljad ja juurviljad.',
-    filters: ['Lehtköögiviljad', 'Juurviljad'],
-  },
-  puuviljad: {
-    title: 'Puuviljad',
-    description: 'Värsked puuviljad ja eksootilised viljad.',
-    filters: ['Õunad', 'Banaanid', 'Marjad'],
-  },
-  liha: {
-    title: 'Liha',
-    description: 'Lihatooted ja värske liha.',
-    filters: ['Veiseliha', 'Sealiha', 'Linnuliha'],
-  },
-  joogid: {
-    title: 'Joogid',
-    description: 'Karastusjoogid, mahlad ja vesi.',
-    filters: ['Mahlad', 'Karastusjoogid'],
-  },
-  kulmutatud: {
-    title: 'Külmutatud tooted',
-    description: 'Külmutatud köögiviljad, valmisroad ja magustoidud.',
-    filters: ['Külmutatud juurviljad', 'Valmisroad'],
-  },
-  pagaritooted: {
-    title: 'Pagaritooted',
-    description: 'Leivad, saiad, küpsetised.',
-    filters: ['Leivad', 'Saiad', 'Saiakesed'],
-  },
-  maiustused: {
-    title: 'Maiustused',
-    description: 'Maiustused',
-    filters: ['Kommid', 'Šokolaadid'],
-  },
-  snakid: {
-    title: 'Snäkid',
-    description: 'Erinevad snäkid',
-    filters: ['Krõpsud', 'Pähklid'],
-  },
-  maitseained: {
-    title: 'Maitseained',
-    description: 'Maitseained ja maitseainesegud.',
-    filters: ['Kuivad maitseained', 'Marinaadid', 'Segud'],
-  },
-  kuivained: {
-    title: 'Kuivained',
-    description: 'Kaunviljad, jahu, riis, pasta.',
-    filters: ['Jahu', 'Pasta', 'Riis'],
-  },
-  kastmed: {
-    title: 'Kastmed',
-    description: 'Kastmed.',
-    filters: [],
-  },
-}
+  const supabase = await createClient()
 
-export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
+  // Find category by slug
+  const { data: categories, error: catErr } = await supabase
+    .from('category')
+    .select('*')
+    .eq('slug', slug)
+    .limit(1)
 
-  const category = categories[slug]
+  if (catErr || !categories || categories.length === 0) return notFound()
 
-  if (!category) return notFound()
+  const category = categories[0]
+
+  // Fetch products for this category and stores for name lookup
+  const [{ data: products }, { data: stores }] = await Promise.all([
+    supabase.from('product').select('*').eq('category_id', category.id),
+    supabase.from('store').select('*'),
+  ])
+
+  const storesMap: Record<string, any> = Object.fromEntries(
+    (stores ?? []).map((s: any) => [String(s.id), s])
+  )
 
   return (
-    <main className="min-h-screen p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">{category.title}</h1>
-      <p className="text-lg text-muted-foreground mb-6">{category.description}</p>
+    <main className="min-h-screen flex flex-col items-center">
+      <div className="flex-1 w-full flex flex-col gap-14 items-center">
+        <Navbar links={[{ href: '/browse', label: 'Tooted' }]} right={<AuthButton />} />
 
-      <div className="flex gap-3 flex-wrap">
-        {category.filters.map(filter => (
-          <button
-            key={filter}
-            className="px-4 py-2 bg-card border text-card-foreground rounded-md hover:bg-accent transition"
-          >
-            {filter}
-          </button>
-        ))}
+        <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
+          <h1 className="text-3xl font-bold mb-4">{category.name}</h1>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+            {(products ?? []).map((p: any) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                categoryName={category.name}
+                storeName={storesMap[String(p.store_id)]?.name}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </main>
   )
