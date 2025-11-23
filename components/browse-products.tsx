@@ -109,6 +109,20 @@ export default function BrowseProducts() {
                 />
               ))
             })()}
+          : products.map(p => {
+              const categoriesMap = Object.fromEntries(
+                (categories ?? []).map((c: any) => [c.id, c])
+              )
+              const storesMap = Object.fromEntries((stores ?? []).map((s: any) => [s.id, s]))
+              return (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  categoryName={categoriesMap[String(p.category_id)]?.name}
+                  storeName={storesMap[String(p.store_id)]?.name}
+                />
+              )
+            })}
       </div>
 
       <div className="flex items-center justify-center gap-3 mt-6">

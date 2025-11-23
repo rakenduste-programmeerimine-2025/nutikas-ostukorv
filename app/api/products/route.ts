@@ -28,6 +28,7 @@ export async function GET(req: Request) {
       { data: stores, error: storeErr },
     ] = await Promise.all([
       productQuery,
+      supabase.from('product').select('*', { count: 'exact' }).range(from, to),
       supabase.from('category').select('*'),
       supabase.from('store').select('*'),
     ])
@@ -36,7 +37,26 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ products: data ?? [], total: count ?? 0 })
+    if (catErr || storeErr) {
+      // non-fatal for product listing, but surface in response
+      return NextResponse.json(
+        {
+          products: data ?? [],
+          total: count ?? 0,
+          categories: categories ?? [],
+          stores: stores ?? [],
+          warnings: [catErr?.message, storeErr?.message].filter(Boolean),
+        },
+        { status: 200 }
+      )
+    }
+
+    return NextResponse.json({
+      products: data ?? [],
+      total: count ?? 0,
+      categories: categories ?? [],
+      stores: stores ?? [],
+    })
   } catch (err: any) {
     return NextResponse.json({ error: err.message ?? String(err) }, { status: 500 })
   }
