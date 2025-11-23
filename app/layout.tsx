@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import './globals.css'
+import CartProvider from '@/components/cart/cart-context'
+import ShoppingCart from '@/components/cart/shopping-cart'
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -9,8 +11,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: 'Next.js and Supabase Starter Kit',
-  description: 'The fastest way to build apps with Next.js and Supabase',
+  title: 'Nutikas Ostukorv',
+  description: 'Poodide hindade võrdlemise rakendus',
 }
 
 const geistSans = Geist({
@@ -33,7 +35,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <CartProvider>
+            {children}
+            <ShoppingCart />
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>
