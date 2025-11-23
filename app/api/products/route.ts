@@ -6,16 +6,31 @@ export async function GET(req: Request) {
     const url = new URL(req.url)
     const page = Number(url.searchParams.get('page') ?? '1')
     const limit = Number(url.searchParams.get('limit') ?? '12')
+    const category = url.searchParams.get('category')
 
     const from = (Math.max(page, 1) - 1) * Math.max(limit, 1)
     const to = from + Math.max(limit, 1) - 1
 
     const supabase = await createClient()
 
-    const { data, error, count } = await supabase
-      .from('product')
-      .select('*', { count: 'exact' })
-      .range(from, to)
+    // Build product query (allow filtering by category)
+    let productQuery = supabase.from('product').select('*', { count: 'exact' })
+    if (category) {
+      const catNum = Number(category)
+      if (!Number.isNaN(catNum)) productQuery = productQuery.eq('category_id', catNum)
+      else productQuery = productQuery.eq('category_id', category)
+    }
+    productQuery = productQuery.range(from, to)
+
+    const [
+      { data, error, count },
+      { data: categories, error: catErr },
+      { data: stores, error: storeErr },
+    ] = await Promise.all([
+      productQuery,
+      supabase.from('category').select('*'),
+      supabase.from('store').select('*'),
+    ])
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
