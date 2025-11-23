@@ -1,8 +1,8 @@
 import { AuthButton } from '@/components/auth-button'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
-import Link from 'next/link'
 import Navbar from '@/components/ui/navbar'
 import ProductModalWrapper from '@/components/product-modal-wrapper'
+import PillsNav from '@/components/ui/pills-nav'
 
 export default function Home() {
   return (
@@ -10,34 +10,10 @@ export default function Home() {
       <div className="flex-1 w-full flex flex-col gap-14 items-center">
         <Navbar right={<AuthButton />} />
 
+        <PillsNav active="Otsing" />
+
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
           <div className="w-full flex flex-col items-center gap-6">
-            <div className="flex items-center gap-3">
-              <Link
-                href="/data"
-                className="px-4 py-2 rounded-md bg-card text-card-foreground border"
-              >
-                Andmed
-              </Link>
-              <Link
-                href="/stores"
-                className="px-4 py-2 rounded-md bg-card text-card-foreground border"
-              >
-                Poenimekiri
-              </Link>
-
-              <button className="px-4 py-2 rounded-md bg-primary text-primary-foreground">
-                Otsing
-              </button>
-
-              <Link
-                href="/browse"
-                className="px-4 py-2 rounded-md bg-card text-card-foreground border"
-              >
-                Tooted
-              </Link>
-            </div>
-
             <h2 className="text-2xl font-medium">Sisesta toote nimi</h2>
 
             <div className="w-full max-w-2xl">
