@@ -12,7 +12,7 @@ const categories: Record<string, CategoryConfig> = {
     description: 'Kõik piimatooted ja sellega seotud kaubad.',
     filters: ['Piimad', 'Juustud', 'Jogurtid'],
   },
-  köögiviljad: {
+  koogiviljad: {
     title: 'Köögiviljad',
     description: 'Värsked köögiviljad ja juurviljad.',
     filters: ['Lehtköögiviljad', 'Juurviljad'],
@@ -32,7 +32,7 @@ const categories: Record<string, CategoryConfig> = {
     description: 'Karastusjoogid, mahlad ja vesi.',
     filters: ['Mahlad', 'Karastusjoogid'],
   },
-  külmutatud: {
+  kulmutatud: {
     title: 'Külmutatud tooted',
     description: 'Külmutatud köögiviljad, valmisroad ja magustoidud.',
     filters: ['Külmutatud juurviljad', 'Valmisroad'],
@@ -47,7 +47,7 @@ const categories: Record<string, CategoryConfig> = {
     description: 'Maiustused',
     filters: ['Kommid', 'Šokolaadid'],
   },
-  snäkid: {
+  snakid: {
     title: 'Snäkid',
     description: 'Erinevad snäkid',
     filters: ['Krõpsud', 'Pähklid'],
