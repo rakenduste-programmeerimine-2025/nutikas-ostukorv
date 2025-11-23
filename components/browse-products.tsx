@@ -9,6 +9,7 @@ export default function BrowseProducts() {
   const [products, setProducts] = React.useState<Product[]>([])
   const [categories, setCategories] = React.useState<any[]>([])
   const [stores, setStores] = React.useState<any[]>([])
+  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null)
   const [total, setTotal] = React.useState(0)
   const [loading, setLoading] = React.useState(false)
   const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)))
@@ -16,7 +17,10 @@ export default function BrowseProducts() {
   React.useEffect(() => {
     let canceled = false
     setLoading(true)
-    fetch(`/api/products?page=${page}&limit=${limit}`)
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+    if (selectedCategory) params.set('category', selectedCategory)
+
+    fetch(`/api/products?${params.toString()}`)
       .then(r => r.json())
       .then(data => {
         if (canceled) return
@@ -45,6 +49,24 @@ export default function BrowseProducts() {
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
+          <label className="text-sm">Kategooria</label>
+          <select
+            value={selectedCategory ?? ''}
+            onChange={e => {
+              const v = e.target.value || null
+              setSelectedCategory(v)
+              setPage(1)
+            }}
+            className="border rounded px-2 py-1"
+          >
+            <option value="">Kõik</option>
+            {categories.map(c => (
+              <option key={c.id} value={String(c.id)}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+
           <label className="text-sm">Kuva</label>
           <select
             value={String(limit)}
@@ -71,6 +93,22 @@ export default function BrowseProducts() {
           ? Array.from({ length: limit }).map((_, i) => (
               <div key={i} className="h-40 bg-muted-foreground/20 rounded" />
             ))
+          : (() => {
+              const categoriesMap = Object.fromEntries(
+                (categories ?? []).map((c: any) => [String(c.id), c])
+              )
+              const storesMap = Object.fromEntries(
+                (stores ?? []).map((s: any) => [String(s.id), s])
+              )
+              return products.map(p => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  categoryName={categoriesMap[String((p as any).category_id)]?.name}
+                  storeName={storesMap[String((p as any).store_id)]?.name}
+                />
+              ))
+            })()}
           : products.map(p => {
               const categoriesMap = Object.fromEntries(
                 (categories ?? []).map((c: any) => [c.id, c])
