@@ -2,15 +2,33 @@ import { notFound } from 'next/navigation'
 import Navbar from '@/components/ui/navbar'
 import { AuthButton } from '@/components/auth-button'
 import { createClient } from '@/lib/supabase/server'
-import ProductCard from '@/components/product-card'
+import SearchableProductGrid from '@/components/searchable-product-grid'
 
-export default async function CategoryPage({ params }: { params: { slug: string } }) {
-  // `params` may be a Promise in some Next.js setups — unwrap it before use
-  const { slug } = (await params) as { slug: string }
+type Category = {
+  id: string | number
+  name: string
+  slug: string
+  [key: string]: unknown
+}
+
+type Product = {
+  id: string | number
+  name: string
+  store_id: string | number | null
+  [key: string]: unknown
+}
+
+type Store = {
+  id: string | number
+  name: string
+  [key: string]: unknown
+}
+
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
 
   const supabase = await createClient()
 
-  // Find category by slug
   const { data: categories, error: catErr } = await supabase
     .from('category')
     .select('*')
@@ -19,16 +37,18 @@ export default async function CategoryPage({ params }: { params: { slug: string 
 
   if (catErr || !categories || categories.length === 0) return notFound()
 
-  const category = categories[0]
+  const category = categories[0] as Category
 
-  // Fetch products for this category and stores for name lookup
   const [{ data: products }, { data: stores }] = await Promise.all([
     supabase.from('product').select('*').eq('category_id', category.id),
     supabase.from('store').select('*'),
   ])
 
-  const storesMap: Record<string, any> = Object.fromEntries(
-    (stores ?? []).map((s: any) => [String(s.id), s])
+  const typedProducts = (products ?? []) as Product[]
+  const typedStores = (stores ?? []) as Store[]
+
+  const storesMap: Record<string, Store> = Object.fromEntries(
+    typedStores.map(s => [String(s.id), s])
   )
 
   return (
@@ -39,16 +59,11 @@ export default async function CategoryPage({ params }: { params: { slug: string 
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
           <h1 className="text-3xl font-bold mb-4">{category.name}</h1>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-            {(products ?? []).map((p: any) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                categoryName={category.name}
-                storeName={storesMap[String(p.store_id)]?.name}
-              />
-            ))}
-          </div>
+          <SearchableProductGrid
+            categoryName={category.name}
+            products={typedProducts}
+            storesMap={storesMap}
+          />
         </div>
       </div>
     </main>
