@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import bcrypt from 'bcrypt'
 
-const supabase = createClient(
+// IMPORTANT — service role can read/compare credentials,
+// but WILL NOT be exposed to the browser.
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -12,40 +14,79 @@ export async function POST(req: Request) {
     const { email, password } = await req.json()
 
     if (!email || !password) {
-      return NextResponse.json({ error: 'Missing email or password' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Missing fields' },
+        { status: 400 }
+      )
     }
 
-    const { data: users, error } = await supabase
+    const { data: userRow, error: fetchError } = await supabaseAdmin
       .from('user')
       .select('*')
       .eq('email', email)
-      .limit(1)
+      .single()
 
-    if (error) throw error
-    if (!users || users.length === 0) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    if (fetchError || !userRow) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 400 }
+      )
     }
 
-    const user = users[0]
+    const match = await bcrypt.compare(password, userRow.password_hash)
 
-    const isValid = await bcrypt.compare(password, user.password_hash)
-    if (!isValid) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    if (!match) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 400 }
+      )
     }
 
-    await supabase
-      .from('user')
-      .update({ last_login: new Date().toISOString() })
-      .eq('user_id', user.user_id)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        auth: { persistSession: false } // since API route, not browser
+      }
+    )
 
-    return NextResponse.json({
-      message: 'Login successful',
-      user: { id: user.user_id, username: user.username, email: user.email },
+    const { data: sessionData, error: authError } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+    if (authError) {
+      return NextResponse.json(
+        { error: authError.message },
+        { status: 400 }
+      )
+    }
+
+    // Return proper session cookies
+    const response = NextResponse.json({ success: true })
+    response.cookies.set({
+      name: 'sb-access-token',
+      value: sessionData.session!.access_token,
+      httpOnly: true,
+      path: '/'
+    })
+    response.cookies.set({
+      name: 'sb-refresh-token',
+      value: sessionData.session!.refresh_token,
+      httpOnly: true,
+      path: '/'
     })
 
+    return response
   } catch (err: unknown) {
     console.error('Login error:', err)
-    const message = err instanceof Error ? err.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    const message =
+      err instanceof Error ? err.message : 'Internal server error'
+
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    )
   }
 }

@@ -15,21 +15,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
-    // hash password before storing
+    // required for RLS
+    const { error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+
+    if (authError) {
+      return NextResponse.json({ error: authError.message }, { status: 400 })
+    }
+
     const password_hash = await bcrypt.hash(password, 10)
 
-    // insert into 'user'
-    const { data, error } = await supabase
+    const { error: dbError } = await supabase
       .from('user')
-      .insert([{ username, email, password_hash }])
-      .select()
+      .insert({
+        username,
+        email,
+        password_hash,
+      })
 
-    if (error) throw error
+    if (dbError) {
+      return NextResponse.json({ error: dbError.message }, { status: 400 })
+    }
 
-    return NextResponse.json({ message: 'User registered successfully', user: data[0] })
+    return NextResponse.json({ success: true })
   } catch (err: unknown) {
     console.error('Register error:', err)
-    const message = err instanceof Error ? err.message : 'Internal server error'
-    return NextResponse.json({ error: message || 'Internal server error' }, { status: 500 })
+
+    const message =
+      err instanceof Error ? err.message : 'Internal server error'
+
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    )
   }
 }
