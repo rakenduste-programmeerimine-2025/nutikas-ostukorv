@@ -63,7 +63,13 @@ export function ProductCard({ product, categoryName, storeName, onAdd }: Product
         <div className="flex flex-col">
           <div className="text-sky-500 font-medium text-base">{price}</div>
           <div className="mt-1 text-lg font-bold">{product.name}</div>
-          {categoryName && <div className="text-sm text-muted-foreground mt-2">{categoryName}</div>}
+          {(categoryName || storeName) && (
+            <div className="text-sm font-normal mxt-2">
+              {categoryName}
+              {categoryName && storeName && <span className="mx-1">•</span>}
+              {storeName}
+            </div>
+          )}
         </div>
       </CardContent>
 
