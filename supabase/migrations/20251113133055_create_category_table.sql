@@ -1,6 +1,6 @@
 create table category
 (
-    id uuid primary key default uuid_generate_v4(),
+    id bigserial primary key,
     name text unique not null
 
 );
