@@ -1,8 +1,8 @@
 import { AuthButton } from '@/components/auth-button'
 import { createClient } from '@supabase/supabase-js'
-import ProductCard from '@/components/product-card'
 import Navbar from '@/components/ui/navbar'
 import PillsNav from '@/components/ui/pills-nav'
+import DataTablesTabs from '@/components/data-tables-tabs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,36 +15,41 @@ export default async function Page() {
     await supabase.from('category').select('*')
   const { data: products, error: productError } =
     await supabase.from('product').select('*')
+  const { data: users, error: userError } =
+    await supabase.from('user').select('*')
 
-  if (storeError || categoryError || productError) {
-    console.error('Errors:', storeError, categoryError, productError)
+  if (storeError || categoryError || productError || userError) {
+    console.error('Errors:', storeError, categoryError, productError, userError)
     return <p>Error loading data. Check console.</p>
   }
 
-  const storesMap = Object.fromEntries((stores ?? []).map((s: any) => [s.id, s]))
-  const categoriesMap = Object.fromEntries((categories ?? []).map((c: any) => [c.id, c]))
+  const categoriesOrdered = (categories ?? []).sort((a: any, b: any) =>
+    a.name.localeCompare(b.name)
+  )
 
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-14 items-center">
-
         <Navbar right={<AuthButton />} />
 
         <PillsNav active="Andmed" />
 
-        <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
-          <h1 className="mb-4">Products</h1>
+        <div className="w-full max-w-5xl p-6 flex flex-col items-start gap-10">
+          <header className="w-full flex flex-col gap-2">
+            <h1 className="text-2xl font-semibold">Andmete ülevaade</h1>
+            <p className="text-sm text-muted-foreground">
+              Supabase tabelite andmete vaatamine ühes kohas.
+            </p>
+          </header>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(products ?? []).map((p: any) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                categoryName={categoriesMap[p.category_id]?.name}
-                storeName={storesMap[p.store_id]?.name}
-              />
-            ))}
-          </div>
+          <section className="w-full flex flex-col gap-4">
+            <DataTablesTabs
+              products={products ?? []}
+              categories={categoriesOrdered ?? []}
+              stores={stores ?? []}
+              users={users ?? []}
+            />
+          </section>
         </div>
       </div>
     </main>
