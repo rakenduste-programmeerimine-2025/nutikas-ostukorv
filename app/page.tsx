@@ -87,7 +87,7 @@ export default function Home() {
                   {
                     name: 'Joogid',
                     slug: 'joogid',
-                    image: 'https://hshambaravi.ee/wp-content/uploads/2020/04/fresh-juice-2.jpg',
+                    image: 'https://bakewithshivesh.com/wp-content/uploads/2022/04/IMG_9331-scaled.jpg',
                   },
                   {
                     name: 'Külmutatud',
