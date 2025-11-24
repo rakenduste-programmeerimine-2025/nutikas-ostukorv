@@ -3,6 +3,8 @@ import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import Navbar from '@/components/ui/navbar'
 import ProductModalWrapper from '@/components/product-modal-wrapper'
 import PillsNav from '@/components/ui/pills-nav'
+import Link from 'next/link'
+
 
 export default function Home() {
   return (
