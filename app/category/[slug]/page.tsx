@@ -54,7 +54,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-14 items-center">
-        <Navbar links={[{ href: '/browse', label: 'Tooted' }]} right={<AuthButton />} />
+        <Navbar right={<AuthButton />} />
 
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
           <h1 className="text-3xl font-bold mb-4">{category.name}</h1>
