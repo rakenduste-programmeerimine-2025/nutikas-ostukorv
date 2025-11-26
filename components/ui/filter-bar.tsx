@@ -89,9 +89,9 @@ export default function FilterBar({
         onChange={e => onLimitChange(Number(e.target.value))}
         className="border rounded px-2 py-1"
       >
-        <option value="12">12</option>
-        <option value="24">24</option>
-        <option value="52">52</option>
+        <option value="15">15</option>
+        <option value="30">30</option>
+        <option value="90">90</option>
       </select>
 
       <label className="text-sm">Sorteeri</label>
@@ -100,7 +100,6 @@ export default function FilterBar({
         onChange={e => onSortChange?.(e.target.value || null)}
         className="border rounded px-2 py-1"
       >
-        <option value="">Default</option>
         <option value="price_asc">Odavaim</option>
         <option value="price_desc">Kalleim</option>
       </select>
@@ -110,7 +109,7 @@ export default function FilterBar({
         className="ml-2 px-2 py-1 border rounded text-sm text-muted-foreground"
         type="button"
       >
-        Clear
+        Tühjenda
       </button>
     </div>
   )
