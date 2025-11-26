@@ -32,6 +32,26 @@ export default function ShoppingCart() {
     }
   }, [items, sortBy])
 
+  function exportList() {
+    const lines = items.map(
+      it => `${it.product.name} - ${Number(it.product.price).toFixed(2)} € x ${it.quantity}\r\n\r\n`
+    )
+
+    const totalBlock = `\r\nKokku: ${totalPrice.toFixed(2)} €`
+
+    const text = lines.join('') + totalBlock
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'ostunimekiri.txt'
+    a.click()
+
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="fixed top-6 right-6 z-50">
       <div className="flex items-center gap-2">
@@ -123,7 +143,10 @@ export default function ShoppingCart() {
           </div>
 
           <div className="mt-3">
-            <button className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+            <button
+              onClick={exportList}
+              className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+            >
               Ostunimekirja eksport
             </button>
           </div>
