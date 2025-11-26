@@ -11,6 +11,7 @@ export async function GET(req: Request) {
     const minPrice = url.searchParams.get('minPrice')
     const maxPrice = url.searchParams.get('maxPrice')
     const sort = url.searchParams.get('sort')
+    const search = url.searchParams.get('search')
 
     const from = (Math.max(page, 1) - 1) * Math.max(limit, 1)
     const to = from + Math.max(limit, 1) - 1
@@ -40,6 +41,10 @@ export async function GET(req: Request) {
     if (maxPrice) {
       const max = Number(maxPrice)
       if (!Number.isNaN(max)) productQuery = productQuery.lte('price', max)
+    }
+
+    if (search) {
+      productQuery = productQuery.ilike('name', `%${search}%`)
     }
 
     // Apply sorting if provided
