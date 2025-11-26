@@ -7,7 +7,32 @@ export default function ShoppingCart() {
   const { items, totalItems, removeItem, updateQty, clear } = useCart()
   const [open, setOpen] = React.useState(false)
 
-  const totalPrice = items.reduce((sum, it) => sum + Number(it.product.price) * it.quantity, 0)
+  const [sortBy, setSortBy] = React.useState<
+    'price-asc' | 'price-desc' | 'qty-asc' | 'qty-desc' | 'none'
+  >('none')
+
+  const totalPrice = items.reduce(
+    (sum, it) => sum + Number(it.product.price) * it.quantity,
+    0
+  )
+
+  const sortedItems = React.useMemo(() => {
+    const copy = [...items]
+
+    switch (sortBy) {
+      case 'price-asc':
+        return copy.sort((a, b) => a.product.price - b.product.price)
+      case 'price-desc':
+        return copy.sort((a, b) => b.product.price - a.product.price)
+      case 'qty-asc':
+        return copy.sort((a, b) => a.quantity - b.quantity)
+      case 'qty-desc':
+        return copy.sort((a, b) => b.quantity - a.quantity)
+      case 'none':
+      default:
+        return items
+    }
+  }, [items, sortBy])
 
   return (
     <div className="fixed top-6 right-6 z-50">
@@ -27,7 +52,7 @@ export default function ShoppingCart() {
       </div>
 
       {open && (
-        <div className="mt-3 w-80 bg-background border rounded shadow-lg p-4">
+        <div className="mt-3 w-96 bg-background border rounded shadow-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold">Ostukorv</h4>
             <button className="text-sm text-muted-foreground" onClick={() => clear()}>
@@ -35,11 +60,26 @@ export default function ShoppingCart() {
             </button>
           </div>
 
-          <div className="max-h-64 overflow-auto">
-            {items.length === 0 && (
-              <div className="text-sm text-muted-foreground">Ostukorvis on tühi</div>
+          <div className="mb-3 grid grid-cols-1 gap-2">
+            <select
+              className="border rounded px-2 py-1 text-sm"
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as any)}
+            >
+              <option value="none">– Sorteerimine –</option>
+              <option value="price-asc">Hind: odavam → kallim</option>
+              <option value="price-desc">Hind: kallim → odavam</option>
+              <option value="qty-asc">Kogus: väiksem → suurem</option>
+              <option value="qty-desc">Kogus: suurem → väiksem</option>
+            </select>
+          </div>
+
+          <div className="max-h-72 overflow-auto">
+            {sortedItems.length === 0 && (
+              <div className="text-sm text-muted-foreground">Ostukorv on tühi</div>
             )}
-            {items.map(it => (
+
+            {sortedItems.map(it => (
               <div
                 key={it.product.id}
                 className="flex items-center gap-3 py-2 border-b last:border-b-0"
@@ -50,6 +90,7 @@ export default function ShoppingCart() {
                     {Number(it.product.price).toFixed(2)} €
                   </div>
                 </div>
+
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
