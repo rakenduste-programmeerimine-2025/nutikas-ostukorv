@@ -1,0 +1,214 @@
+-- -----------------------
+-- Ensure UUID function exists
+-- -----------------------
+CREATE EXTENSION
+IF NOT EXISTS "uuid-ossp";
+
+-- -----------------------
+-- Stores
+-- -----------------------
+INSERT INTO public.store
+    (id, name)
+VALUES
+    (1, 'Coop'),
+    (2, 'Rimi'),
+    (3, 'Selver')
+ON CONFLICT
+(id) DO NOTHING;
+
+-- -----------------------
+-- Category: liha
+-- -----------------------
+
+-- -----------------------
+-- Products for Coop (store_id = 1)
+-- NOW INCLUDING NAME, PRICE, STORE_ID AND IMAGE_URL (from CSV)
+-- -----------------------
+INSERT INTO public.product
+    (category_id, name, price, store_id, image_url)
+SELECT c.id, p.product_name, p.price, p.store_id, p.image_url
+FROM public.category c
+CROSS JOIN (
+    VALUES
+        ('Coop Grill-liha punases marinaadis 500g', 5.15, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/07/4740660012857.png'),
+        ('Coop Grillvorst 600g', 3.89, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740660012888.jpg'),
+        ('Coop Grillvorst juustuga 600g', 3.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/08/4740660012895-1.png'),
+        ('Coop Klassikaline shaslõkk sealihast600g', 4.69, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740660012871.jpg'),
+        ('Coop peekoni viilud grillmarinaadis 500g', 4.59, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740660012840.png'),
+        ('Coop shaslõkk punases marinaadis 600g', 5.39, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740660012901.png'),
+        ('Hüva Grillvorst 500g', 2.89, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/06/4740660008607.png'),
+        ('Hüva Pisikesed vorstikesed juustuga 500g', 2.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740660012864.jpg'),
+        ('Hüva toored grillvorstid 500g lambasool.', 3.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740660001776.jpg'),
+        ('Isukas Õllepunnid juustuga 500g', 3.39, 1, 'https://coophaapsalu.ee/wp-content/uploads/2021/04/4740296003236.png'),
+        ('Karni grillahjuvorstid 400g', 4.49, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/10/4740579505716.png'),
+        ('Karni marinaadis ahjuribi ~1.5kg', 6.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/10/579772.png'),
+        ('Karni P/S ahjushaslõkivorstid 500g', 4.49, 1, 'https://coophaapsalu.ee/wp-content/uploads/2024/10/4740579152552-1.png'),
+        ('Karni P/S vorst Ahjukad 500g', 3.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2022/10/4740579102397-1.png'),
+        ('Karni P/S vorst Ahjukad juustuga 500g', 4.49, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/10/4740579172017.png'),
+        ('Linnamäe Saunavorst juustu-jalapeno 260g', 5.25, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/10/4740618008369.png'),
+        ('M&M Eelküps.BBQ-suitsune tagakoot ~1.5kg', 5.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/11/23171001.png'),
+        ('M&M kauaküpsenud koodiliha kondita ~1kg', 8.49, 1, 'https://coophaapsalu.ee/wp-content/uploads/2024/10/23171839.png'),
+        ('M&M Kodu grillvorstid 600g', 3.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2022/04/4740171187570.png'),
+        ('M&M Kooreklops 600g', 5.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740171081717.png'),
+        ('M&M Maitselt mahe grillvorst juustu 600g', 5.39, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740171085159.jpg'),
+        ('M&M Maitselt mahedad toorvorstikesed400g', 3.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/05/4740171177465.png'),
+        ('M&M Rebitud kanaliha punases kastmes200g', 2.29, 1, 'https://coophaapsalu.ee/wp-content/uploads/2022/02/4740171187426.png'),
+        ('M&M Rebitud sealiha BBQ kastmes200g', 2.29, 1, 'https://coophaapsalu.ee/wp-content/uploads/2022/02/4740171187471.png'),
+        ('M&M Saksa praevorst 400g', 2.59, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/10/4740171189345.png'),
+        ('M&M shaslõkk klassikalises marin.600g', 4.89, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/06/4740171081625.png'),
+        ('Matsimoka ahjuvorst juustu sampinj.365g', 5.25, 1, 'https://coophaapsalu.ee/wp-content/uploads/2024/11/4744735011134.png'),
+        ('Matsimoka ahjuvorst mozzarella tom.365g', 5.25, 1, 'https://coophaapsalu.ee/wp-content/uploads/2024/11/4744735010915.png'),
+        ('Matsimoka ahjuvorst sibula-äädikaga 365g', 4.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2024/11/4744735010885.png'),
+        ('MM Maitselt mahedad grillvorstid 900g', 6.59, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740171084114.jpg'),
+        ('Nõo Jäägri grillvorstid 365g', 4.59, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/09/4740574090873-2.png'),
+        ('Nõo praepeekon 430g', 6.49, 1, 'https://coophaapsalu.ee/wp-content/uploads/2024/10/4740574065055-1.png'),
+        ('Oskar Ahjupadrun 500g grillvorstikesed', 4.39, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/10/4740569002430.png'),
+        ('Oskar kauaküpsetatud suitsukoot ~900g', 7.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2021/02/23569563.png'),
+        ('Oskar Tüüringeri praevorstid 480g', 4.49, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/11/4740569012132.png'),
+        ('Rannarootsi Teriyaki grillribid 900g', 8.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740215800038.png'),
+        ('RLK küpsetatud tagakoot ~1kg v/p', 6.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/10/23003361.png'),
+        ('RLK Mustika grill-liha seakaelakarb.500g', 6.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/4740003006741.png'),
+        ('RLK Piprane seakaelakarbonaad 500g', 7.49, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/10/4740003018003.png'),
+        ('RR Ahjuvorstid röstitud küüslauguga 400g', 4.19, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/10/4740296003908.png')
+) AS p(product_name, price, store_id, image_url)
+WHERE c.name = 'lihatooted'
+ON CONFLICT DO NOTHING;
+
+-- -----------------------
+-- TODO: Add products for Rimi (store_id = 2) and Selver (store_id = 3)
+-- -----------------------
+INSERT INTO public.product
+    (category_id, name, price, store_id, image_url)
+VALUES
+    (3, 'Kodune hakkliha M&M 500g', 3.85, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_919750_PCE_EE'),
+    (3, 'Delikatess broilerihakklihasegu Tallegg 300g', 2.95, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_266352_PCE_EE'),
+    (3, 'Delikatesshakkliha M&M 300g', 3.99, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_901246_PCE_EE'),
+    (3, 'Veisehakkliha Rimi 400g', 4.99, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_814144_PCE_EE'),
+    (3, 'Hakkliha kodune Rakvere 400g', 3.55, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_271596_PCE_EE'),
+    (3, 'Broileririnnafilee hakkliha Fit 300g', 3.89, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_903869_PCE_EE'),
+    (3, 'Sea- veisehakkliha mass Rimi Smart 400g', 2.25, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_809218_PCE_EE'),
+    (3, 'Delikatess seahakkliha M&M 300g', 2.69, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_986458_PCE_EE'),
+    (3, 'Sea- ja veisehakkliha 500g', 3.99, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_940295_PCE_EE'),
+    (3, 'Mahe rohum.veise h.liha Liivima Lihaveis 300g', 5.55, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_4005161_PCE_EE'),
+    (3, 'Veiselihast burgeripihvid Americano 220g', 3.79, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_810117_PCE_EE'),
+    (3, 'Seahakkliha 500g', 3.55, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_901869_PCE_EE'),
+    (3, 'Kodune kotletisegu 500g', 3.75, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_968686_PCE_EE'),
+    (3, 'Perehakklihasegu Rakvere 300g', 1.69, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_4008208_PCE_EE'),
+    (3, 'Kalkuni rinnafilee hakkliha Rimi, jah. 500g', 5.49, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_815755_PCE_EE'),
+    (3, 'Seahakkliha Rimi 500g', 3.09, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_805675_PCE_EE'),
+    (3, 'Hakklihasegu sealihast, jahut.Rimi Smart 350g', 1.99, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_815631_PCE_EE'),
+    (3, 'Mahe broilerihakkliha Rimi BIO 300g', 7.49, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_815175_PCE_EE'),
+    (3, 'Merluusimedaljon karulaugumarinaadis, SELVER, kg', 14.99, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2714894000005.jpg'),
+    (3, 'Armeenia šašlõkk, ARMEENIA GRILL, kg', 12.19, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2323100500002.jpg'),
+    (3, 'Tagasink ekstra suitsu, OSKAR, kg', 14.52, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2356983300001.jpg'),
+    (3, 'Ungari pekk, OSKAR, kg', 8.83, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2356992600000.jpg'),
+    (3, 'Suitsupõsk, NÕO, kg', 9.14, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2357118000001.jpg'),
+    (3, 'Ribi kondita, MAKS&MOORITS, kg', 10.97, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2358314500005.jpg'),
+    (3, 'Maamehesink, MAKS&MOORITS, kg', 12.59, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2358316000008.jpg'),
+    (3, 'Mustika grill-ribi, RAKVERE LK, kg', 7.79, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2360364500003.jpg'),
+    (3, 'Suitsukanakints, TALLEGG, kg', 7.10, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2364027300009.jpg'),
+    (3, 'Eestimaine broilerikintsuliha, TALLEGG, kg', 12.19, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2364041700007.jpg'),
+    (3, 'Suitsukana rinnafilee, TALLEGG, kg', 11.99, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2364076100001.jpg'),
+    (3, 'Kuumsuitsu heik, M.V.WOOL, kg', 12.29, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2700167000001.jpg'),
+    (3, 'Maasuitsu külg, RANNAROOTSI, kg', 16.05, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2329628100007.jpg'),
+    (3, 'Soolapeekon, NÕO, kg', 10.15, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2701332000000.jpg'),
+    (3, 'Vürtsine sealiha, RANNAROOTSI, 240 g', 2.63, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740215700000.jpg'),
+    (3, 'Räimerullid rosèpipra-küüslaugu marinaadis, KALURI, 300 g', 4.39, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740590074284.jpg'),
+    (3, 'Veise pipraliha, KARNI, 120 g', 3.75, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740579300830.jpg'),
+    (3, 'Heeringafilee vähesoolane, KAPTEN GRANT, 240 g', 2.19, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740687000936.jpg'),
+    (3, 'Heeringafilee rollmops kurgiga, KAPTEN GRANT, 250 g', 3.49, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740687000967.jpg'),
+    (3, 'Karamelliseeritud sibulapatee, CUIT´S, 125 g', 2.99, 3, 'https://www.selver.ee/img/450/440/resize/8/4/8413828116075.jpg'),
+    (3, 'Suitsutatud seakoot, OSKAR, kg', 6.27, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2356996400002.jpg'),
+    (3, 'Sea välisfilee kamaraga, RAKVERE LK, kg', 8.89, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2702875000007.jpg'),
+    (3, 'Kodune hakkliha, MAKS&MOORITS, 500 g', 4.09, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740171075518.jpg'),
+    (3, 'Maitselt mahe grillvorst juustuga, MAKS&MOORITS, 600 g', 5.88, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740171085159.jpg'),
+    (3, 'Tuunikala filee tomatikastmes, CALVO, 160 g', 3.59, 3, 'https://www.selver.ee/img/450/440/resize/8/4/8410090011572.jpg'),
+    (3, 'Tuunikala filee soolvees, CALVO, 160 g neto 122 g', 3.39, 3, 'https://www.selver.ee/img/450/440/resize/8/4/8410090031549.jpg'),
+    (3, 'Sea šašlõkk, ARMEENIA GRILL, kg', 12.59, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2323100600009.jpg'),
+    (3, 'Broileri rinnafileeribad jogurti-tilli marinaadis, TALLEGG, 500 g', 6.09, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740046005992.jpg'),
+    (3, 'Broileri pooltiivad klassikalises marinaadis, TALLEGG, 800 g', 5.22, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740046006050.jpg'),
+    (3, 'Juustuga minutipihv broileririnnafileest, TALLEGG, 350 g', 6.09, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740046006104.jpg'),
+    (3, 'Räimerullid küüslaugumarinaadis, VIRU RAND, 400 g', 4.99, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740041004020.jpg'),
+    (3, 'Forellimari, M.V.WOOL, 135 g', 14.29, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740192011823.jpg'),
+    (3, 'Eestimaine broileripooltiib, TALLEGG, 400 g', 3.24, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740046004810.jpg'),
+    (3, 'Fit Broileririnnafilee hakkliha, TALLEGG, 300 g', 3.49, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740046004384.jpg'),
+    (3, 'Lihakas doktorivorst, RAKVERE LK, 360 g', 3.55, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003009186.jpg'),
+    (3, 'Seemnekattega toorsuitsuvorst, RAKVERE LK, 110 g', 2.63, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003009254.jpg'),
+    (3, 'Väike viiner, MAKS&MOORITS, 260 g', 1.92, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740171085166.jpg'),
+    (3, 'Ameerikapärane toorsuitsupeekon, RAKVERE LK, 150 g', 2.94, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003009278.jpg'),
+    (3, 'Sprotid õlis, RANNAKÜLA, 160 g', 2.99, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4742835010064.jpg'),
+    (3, 'Praetud kilud tomatikastmes, RANNAKÜLA, 240 g', 2.25, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4742835010101.jpg'),
+    (3, 'Sprotid õlis, RANNAKÜLA, 100 g', 2.25, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4742835010019.jpg'),
+    (3, 'Sprotid tomatikastmes, RANNAKÜLA, 100 g', 2.25, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4742835010040.jpg'),
+    (3, 'Pereviiner, RAKVERE LK, 900 g, ettetellimisel', 3.65, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003004020.jpg'),
+    (3, 'Lihakas Krakov, RAKVERE LK, 300 g', 3.65, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003010205.jpg'),
+    (3, 'Õrnsoola lõhefilee viilud, AVEKTRA, 100 g', 4.79, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740689907165.jpg'),
+    (3, 'Šveitsi šnitsel, RANNAROOTSI, 400 g', 3.99, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740296008293.jpg'),
+    (3, 'Eestimaine broilerikints, TALLEGG, kg', 5.28, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2364049300001.jpg'),
+    (3, 'Eestimaine broileririnnafilee minutipihv, TALLEGG, 400 g', 6.09, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740046007644.jpg'),
+    (3, 'Kuivatatud põdraliha, LINNAMÄE LIHATÖÖSTUS, 40 g', 6.09, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740618002183.jpg'),
+    (3, 'Kuivatatud metssealiha, LINNAMÄE LIHATÖÖSTUS, 40 g', 4.87, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740618002190.jpg'),
+    (3, 'Kuivatatud hirveliha, LINNAMÄE LIHATÖÖSTUS, 40 g', 4.67, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740618002206.jpg'),
+    (3, 'Kuivatatud veiseliha, LINNAMÄE LIHATÖÖSTUS, 50 g', 4.36, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740618002176.jpg'),
+    (3, 'Rullsink, RANNAROOTSI, kg', 10.97, 3, 'https://www.selver.ee/img/450/440/resize/2/3/2329622500001.jpg'),
+    (3, 'Heeringafilee kergsoola, VICI, 220 g', 2.85, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4770190377669.jpg'),
+    (3, 'Sprotid õlis, AMBERFISH, 250 g', 2.99, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4751005703569.jpg'),
+    (3, 'Lõunasink, OSKAR, 300 g', 3.13, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740569009514.jpg'),
+    (3, 'Broileri rinnalihasink, KARNI, 300 g', 3.45, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740579202448.jpg'),
+    (3, 'Sealihasült, MAKS&MOORITS, 300 g', 2.38, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740171085951.jpg'),
+    (3, 'Põdramaksa pasteet, LINNAMÄE LIHATÖÖSTUS, 200 g', 2.43, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740618002602.jpg'),
+    (3, 'Tursk suitsutatud, MSDM, 36 g', 2.05, 3, 'https://www.selver.ee/img/450/440/resize/4/2/4260147170141.jpg'),
+    (3, 'Kalmaari ribad, MSDM, 36 g', 2.29, 3, 'https://www.selver.ee/img/450/440/resize/4/2/4260147170509.jpg'),
+    (3, 'Kalmaar vähesoolane, MSDM, 36 g', 2.29, 3, 'https://www.selver.ee/img/450/440/resize/4/2/4260147170158.jpg'),
+    (3, 'Kalmaar pikantne, MSDM, 36 g', 2.29, 3, 'https://www.selver.ee/img/450/440/resize/4/2/4260147170349.jpg'),
+    (3, 'Viilutatud Fuet, LA SELVA, 60 g', 2.69, 3, 'https://www.selver.ee/img/450/440/resize/8/4/8410973474258.jpg'),
+    (3, 'Suitsupeekon, RAKVERE LK, 130 g', 3.13, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003010649.jpg'),
+    (3, 'Perepihvid, RAKVERE LK, 400 g', 2.43, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003010601.jpg'),
+    (3, 'Skumbria õliga, RANNAKÜLA, 240 g', 3.49, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4742835010149.jpg'),
+    (3, 'Beebi-vikerforell roogitud, jahutatud, HÄRJANURME, kg', 12.99, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2710561000002.jpg'),
+    (3, 'Inglisepärane toorsuitsupeekon, RAKVERE LK, 150 g', 2.94, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003010908.jpg'),
+    (3, 'Merekapsasalat, KAPTEN GRANT, 500 g', 2.85, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740687001360.jpg'),
+    (3, 'Külmsuitsu lõheviilud, AVEKTRA, 100 g', 4.69, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740332000014.jpg'),
+    (3, 'Kirsi-rummimarinaadis grill-liha seavälisfileest, RAKVERE LK, 580 g', 5.99, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003010922.jpg'),
+    (3, 'Delikatess-vürtsikilufilee Skandinaavia moodi, BRIIS, 160 g', 2.95, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4742312000427.jpg'),
+    (3, 'Kiievi kotlet, SELVERI KÖÖK, 280 g', 5.85, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740581105324.jpg'),
+    (3, 'Räimesült, VIRU RAND, 270 g', 3.49, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740041000176.jpg'),
+    (3, 'Sprotid õlis, RANNAKÜLA, 250 g', 4.79, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4742835010231.jpg'),
+    (3, 'Praetud heeringarullid tarrendis, KAPTEN GRANT, 480 g', 4.39, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740687001292.jpg'),
+    (3, 'Fuet Extra, EMBUTIDOS CAULA, 160 g', 3.85, 3, 'https://www.selver.ee/img/450/440/resize/8/4/8424863000762.jpg'),
+    (3, 'Snäkk pro KabanossiSnäkk, RAKVERE LK, 120 g', 2.94, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003010878.jpg'),
+    (3, 'Toorsuitsupeekoni kuubikud, RAKVERE LK, 140 g', 2.06, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003010892.jpg'),
+    (3, 'Ribisnäkk SNÄKK pro, RAKVERE LK, 300 g', 3.45, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740003010977.jpg'),
+    (3, 'Suitsune kana snäkk, TALLEGG, 80 g', 3.55, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740046006173.jpg'),
+    (3, 'Snäkk pro Chilli pork jerky, RAKVERE LK, 50 g', 2.84, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740046004216.jpg'),
+    (3, 'Snäkk pro Beef jerky, RAKVERE LK, 50 g', 4.56, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740046004223.jpg'),
+    (3, 'Hirveliha konserv, LINNAMÄE LIHATÖÖSTUS, 240 g', 4.56, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4740618001391.jpg'),
+    (3, 'Kuld-merikoger ehk Dorada roogitud, jahutatud, kg', 19.99, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2710706000003.jpg'),
+    (3, 'Sink Coppa, NEGRONI, 100 g', 4.99, 3, 'https://www.selver.ee/img/450/440/resize/8/0/8028257008350.jpg'),
+    (3, 'Salaami Milano, NEGRONI, 100 g', 4.49, 3, 'https://www.selver.ee/img/450/440/resize/8/0/8028257008244.jpg'),
+    (3, 'Speck Delle Alpi, NEGRONI, 90 g', 5.39, 3, 'https://www.selver.ee/img/450/440/resize/8/0/8028257008343.jpg'),
+    (3, 'Prosciutto Cotto, NEGRONI, 110 g', 5.79, 3, 'https://www.selver.ee/img/450/440/resize/8/0/8028257011497.jpg'),
+    (3, 'Prosciutto Di Parma, NEGRONI, 80 g', 6.25, 3, 'https://www.selver.ee/img/450/440/resize/8/0/8028257008312.jpg'),
+    (3, 'Pangaasiuse filee nahata, sulatatud, kg', 12.99, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2710752000002.jpg'),
+    (3, 'Graavilõhe viilutatud, SELVER, kg', 32.90, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2710773000005.jpg'),
+    (3, 'Wakame salat (sulatatud), SELVER, kg', 17.99, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2710777000001.jpg'),
+    (3, 'Lõhe liblikfilee jahutatud, SELVER, kg', 24.90, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2710789000006.jpg'),
+    (3, 'Lõhe liblikfilee karulaugumarinaadis, SELVER, kg', 28.90, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2710790000002.jpg');
+
+
+
+-- -----------------------
+-- Enable RLS and allow public select
+-- -----------------------
+
+-- Store table
+ALTER TABLE public.store ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select" ON public.store
+FOR
+SELECT USING (true);
+
+-- Product table
+ALTER TABLE public.product ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public select" ON public.product
+FOR
+SELECT USING (true);
