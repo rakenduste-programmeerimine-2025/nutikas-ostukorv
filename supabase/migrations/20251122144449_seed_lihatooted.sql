@@ -1,10 +1,4 @@
 -- -----------------------
--- Ensure UUID function exists
--- -----------------------
-CREATE EXTENSION
-IF NOT EXISTS "uuid-ossp";
-
--- -----------------------
 -- Stores
 -- -----------------------
 INSERT INTO public.store
@@ -195,20 +189,3 @@ VALUES
     (3, 'Lõhe liblikfilee jahutatud, SELVER, kg', 24.90, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2710789000006.jpg'),
     (3, 'Lõhe liblikfilee karulaugumarinaadis, SELVER, kg', 28.90, 3, 'https://www.selver.ee/img/450/440/resize/2/7/2710790000002.jpg');
 
-
-
--- -----------------------
--- Enable RLS and allow public select
--- -----------------------
-
--- Store table
-ALTER TABLE public.store ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public select" ON public.store
-FOR
-SELECT USING (true);
-
--- Product table
-ALTER TABLE public.product ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public select" ON public.product
-FOR
-SELECT USING (true);
