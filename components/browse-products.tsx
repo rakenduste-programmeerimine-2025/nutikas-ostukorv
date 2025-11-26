@@ -6,7 +6,7 @@ import FilterBar from './ui/filter-bar'
 
 export default function BrowseProducts() {
   const [page, setPage] = React.useState(1)
-  const [limit, setLimit] = React.useState(12)
+  const [limit, setLimit] = React.useState(15)
   const [products, setProducts] = React.useState<Product[]>([])
   const [categories, setCategories] = React.useState<any[]>([])
   const [stores, setStores] = React.useState<any[]>([])
@@ -99,7 +99,7 @@ export default function BrowseProducts() {
             setSelectedSort(null)
             setMinPrice('')
             setMaxPrice('')
-            setLimit(12)
+            setLimit(15)
             setPage(1)
           }}
         />
