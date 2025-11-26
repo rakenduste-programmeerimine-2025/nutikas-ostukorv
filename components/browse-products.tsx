@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import ProductCard, { Product } from './product-card'
+import FilterBar from './ui/filter-bar'
 
 export default function BrowseProducts() {
   const [page, setPage] = React.useState(1)
@@ -10,6 +11,10 @@ export default function BrowseProducts() {
   const [categories, setCategories] = React.useState<any[]>([])
   const [stores, setStores] = React.useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null)
+  const [selectedStore, setSelectedStore] = React.useState<string | null>(null)
+  const [minPrice, setMinPrice] = React.useState('')
+  const [maxPrice, setMaxPrice] = React.useState('')
+  const [selectedSort, setSelectedSort] = React.useState<string | null>(null)
   const [total, setTotal] = React.useState(0)
   const [loading, setLoading] = React.useState(false)
   const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)))
@@ -19,6 +24,10 @@ export default function BrowseProducts() {
     setLoading(true)
     const params = new URLSearchParams({ page: String(page), limit: String(limit) })
     if (selectedCategory) params.set('category', selectedCategory)
+    if (selectedStore) params.set('store', selectedStore)
+    if (minPrice) params.set('minPrice', minPrice)
+    if (maxPrice) params.set('maxPrice', maxPrice)
+    if (selectedSort) params.set('sort', selectedSort)
 
     fetch(`/api/products?${params.toString()}`)
       .then(r => r.json())
@@ -39,7 +48,7 @@ export default function BrowseProducts() {
     return () => {
       canceled = true
     }
-  }, [page, limit, selectedCategory])
+  }, [page, limit, selectedCategory, selectedStore, minPrice, maxPrice, selectedSort])
 
   function goto(p: number) {
     setPage(Math.min(Math.max(1, p), totalPages))
@@ -51,40 +60,49 @@ export default function BrowseProducts() {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <label className="text-sm">Kategooria</label>
-          <select
-            value={selectedCategory ?? ''}
-            onChange={e => {
-              const v = e.target.value || null
-              setSelectedCategory(v)
-              setPage(1)
-            }}
-            className="border rounded px-2 py-1"
-          >
-            <option value="">Kõik</option>
-            {categories.map(c => (
-              <option key={c.id} value={String(c.id)}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-
-          <label className="text-sm">Kuva</label>
-          <select
-            value={String(limit)}
-            onChange={e => {
-              setLimit(Number(e.target.value))
-              setPage(1)
-            }}
-            className="border rounded px-2 py-1"
-          >
-            <option value="6">6</option>
-            <option value="12">12</option>
-            <option value="24">24</option>
-          </select>
-          <span className="text-sm text-muted-foreground">rows</span>
-        </div>
+        <FilterBar
+          categories={categories}
+          stores={stores}
+          selectedCategory={selectedCategory}
+          onCategoryChange={v => {
+            setSelectedCategory(v)
+            setPage(1)
+          }}
+          selectedStore={selectedStore}
+          onStoreChange={v => {
+            setSelectedStore(v)
+            setPage(1)
+          }}
+          selectedSort={selectedSort}
+          onSortChange={v => {
+            setSelectedSort(v)
+            setPage(1)
+          }}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          onMinPriceChange={v => {
+            setMinPrice(v)
+            setPage(1)
+          }}
+          onMaxPriceChange={v => {
+            setMaxPrice(v)
+            setPage(1)
+          }}
+          limit={limit}
+          onLimitChange={n => {
+            setLimit(n)
+            setPage(1)
+          }}
+          onClear={() => {
+            setSelectedCategory(null)
+            setSelectedStore(null)
+            setSelectedSort(null)
+            setMinPrice('')
+            setMaxPrice('')
+            setLimit(12)
+            setPage(1)
+          }}
+        />
 
         <div className="text-sm text-muted-foreground">
           Kuvatud {(products ?? []).length} of {total}
