@@ -3,6 +3,7 @@
 import * as React from 'react'
 import ProductCard, { Product } from './product-card'
 import FilterBar from './ui/filter-bar'
+import ProductSearch from './product-search'
 
 export default function BrowseProducts() {
   const [page, setPage] = React.useState(1)
@@ -15,6 +16,7 @@ export default function BrowseProducts() {
   const [minPrice, setMinPrice] = React.useState('')
   const [maxPrice, setMaxPrice] = React.useState('')
   const [selectedSort, setSelectedSort] = React.useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = React.useState('')
   const [total, setTotal] = React.useState(0)
   const [loading, setLoading] = React.useState(false)
   const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)))
@@ -28,6 +30,7 @@ export default function BrowseProducts() {
     if (minPrice) params.set('minPrice', minPrice)
     if (maxPrice) params.set('maxPrice', maxPrice)
     if (selectedSort) params.set('sort', selectedSort)
+    if (searchQuery) params.set('search', searchQuery)
 
     fetch(`/api/products?${params.toString()}`)
       .then(r => r.json())
@@ -48,7 +51,7 @@ export default function BrowseProducts() {
     return () => {
       canceled = true
     }
-  }, [page, limit, selectedCategory, selectedStore, minPrice, maxPrice, selectedSort])
+  }, [page, limit, selectedCategory, selectedStore, minPrice, maxPrice, selectedSort, searchQuery])
 
   function goto(p: number) {
     setPage(Math.min(Math.max(1, p), totalPages))
@@ -59,53 +62,63 @@ export default function BrowseProducts() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
-        <FilterBar
-          categories={categories}
-          stores={stores}
-          selectedCategory={selectedCategory}
-          onCategoryChange={v => {
-            setSelectedCategory(v)
-            setPage(1)
-          }}
-          selectedStore={selectedStore}
-          onStoreChange={v => {
-            setSelectedStore(v)
-            setPage(1)
-          }}
-          selectedSort={selectedSort}
-          onSortChange={v => {
-            setSelectedSort(v)
-            setPage(1)
-          }}
-          minPrice={minPrice}
-          maxPrice={maxPrice}
-          onMinPriceChange={v => {
-            setMinPrice(v)
-            setPage(1)
-          }}
-          onMaxPriceChange={v => {
-            setMaxPrice(v)
-            setPage(1)
-          }}
-          limit={limit}
-          onLimitChange={n => {
-            setLimit(n)
-            setPage(1)
-          }}
-          onClear={() => {
-            setSelectedCategory(null)
-            setSelectedStore(null)
-            setSelectedSort(null)
-            setMinPrice('')
-            setMaxPrice('')
-            setLimit(15)
+      <div className="flex flex-col gap-4 mb-6">
+        <ProductSearch
+          value={searchQuery}
+          onSearchChange={v => {
+            setSearchQuery(v)
             setPage(1)
           }}
         />
 
-        <div className="text-sm text-muted-foreground">
-          Kuvatud {(products ?? []).length} of {total}
+        <div className="flex items-center justify-between">
+          <FilterBar
+            categories={categories}
+            stores={stores}
+            selectedCategory={selectedCategory}
+            onCategoryChange={v => {
+              setSelectedCategory(v)
+              setPage(1)
+            }}
+            selectedStore={selectedStore}
+            onStoreChange={v => {
+              setSelectedStore(v)
+              setPage(1)
+            }}
+            selectedSort={selectedSort}
+            onSortChange={v => {
+              setSelectedSort(v)
+              setPage(1)
+            }}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            onMinPriceChange={v => {
+              setMinPrice(v)
+              setPage(1)
+            }}
+            onMaxPriceChange={v => {
+              setMaxPrice(v)
+              setPage(1)
+            }}
+            limit={limit}
+            onLimitChange={n => {
+              setLimit(n)
+              setPage(1)
+            }}
+            onClear={() => {
+              setSelectedCategory(null)
+              setSelectedStore(null)
+              setSelectedSort(null)
+              setMinPrice('')
+              setMaxPrice('')
+              setLimit(15)
+              setPage(1)
+            }}
+          />
+
+          <div className="text-sm text-muted-foreground">
+            Kuvatud {(products ?? []).length} of {total}
+          </div>
         </div>
       </div>
 
