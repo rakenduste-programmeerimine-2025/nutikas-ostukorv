@@ -2,19 +2,17 @@
 
 import * as React from 'react'
 import { useCart } from './cart-context'
+import { Trash2 } from 'lucide-react'
 
 export default function ShoppingCart() {
-  const { items, totalItems, removeItem, updateQty, clear } = useCart()
+  const { items, totalItems, removeItem, updateQty,} = useCart()
   const [open, setOpen] = React.useState(false)
 
   const [sortBy, setSortBy] = React.useState<
     'price-asc' | 'price-desc' | 'qty-asc' | 'qty-desc' | 'none'
   >('none')
 
-  const totalPrice = items.reduce(
-    (sum, it) => sum + Number(it.product.price) * it.quantity,
-    0
-  )
+  const totalPrice = items.reduce((sum, it) => sum + Number(it.product.price) * it.quantity, 0)
 
   const sortedItems = React.useMemo(() => {
     const copy = [...items]
@@ -52,10 +50,11 @@ export default function ShoppingCart() {
       </div>
 
       {open && (
-        <div className="mt-3 w-96 bg-background border rounded shadow-lg p-4">
+        <div className="absolute right-0 mt-2 w-96 bg-background border rounded shadow-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold">Ostukorv</h4>
-            <button className="text-sm text-muted-foreground" onClick={() => clear()}>
+            <button className="flex items-center gap-1 text-sm text-red-500 hover:text-red-600">
+              <Trash2 className="w-4 h-4" />
               Tühjenda
             </button>
           </div>
@@ -102,7 +101,7 @@ export default function ShoppingCart() {
                     }
                   />
                   <button
-                    className="text-sm text-red-600"
+                    className="text-sm text-white hover:text-red-400"
                     onClick={() => removeItem(it.product.id)}
                   >
                     Eemalda
@@ -118,8 +117,17 @@ export default function ShoppingCart() {
           </div>
 
           <div className="mt-3">
-            <button className="w-full px-3 py-2 bg-primary text-white rounded">
+            <button className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
               Ostunimekirja eksport
+            </button>
+          </div>
+
+          <div className="mt-2">
+            <button
+              onClick={() => setOpen(false)}
+              className="w-full px-3 py-2 rounded border border-muted-foreground text-muted-foreground hover:bg-muted/20"
+            >
+              Sulge
             </button>
           </div>
         </div>
