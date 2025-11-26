@@ -5,7 +5,7 @@ import { useCart } from './cart-context'
 import { Trash2 } from 'lucide-react'
 
 export default function ShoppingCart() {
-  const { items, totalItems, removeItem, updateQty,} = useCart()
+  const { items, totalItems, removeItem, updateQty } = useCart()
   const [open, setOpen] = React.useState(false)
 
   const [sortBy, setSortBy] = React.useState<
@@ -50,10 +50,10 @@ export default function ShoppingCart() {
       </div>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-96 bg-background border rounded shadow-lg p-4">
+        <div className="absolute right-0 mt-2 w-[28rem] bg-background border rounded shadow-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold">Ostukorv</h4>
-            <button className="flex items-center gap-1 text-sm text-red-500 hover:text-red-600">
+            <button className="flex items-center gap-1 text-sm text-sm text-white hover:text-red-400">
               <Trash2 className="w-4 h-4" />
               Tühjenda
             </button>
@@ -83,6 +83,12 @@ export default function ShoppingCart() {
                 key={it.product.id}
                 className="flex items-center gap-3 py-2 border-b last:border-b-0"
               >
+                <img
+                  src={it.product.image_url || '/placeholder.png'}
+                  alt={it.product.name}
+                  className="w-12 h-12 object-cover rounded border"
+                />
+
                 <div className="flex-1">
                   <div className="font-medium">{it.product.name}</div>
                   <div className="text-sm text-muted-foreground">
