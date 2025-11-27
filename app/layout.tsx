@@ -3,7 +3,7 @@ import { Geist } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import './globals.css'
 import CartProvider from '@/components/cart/cart-context'
-import ShoppingCart from '@/components/cart/shopping-cart'
+import { CartVisibilityWrapper } from '@/components/cart/cart-visibility-wrapper'
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -37,7 +37,7 @@ export default function RootLayout({
         >
           <CartProvider>
             {children}
-            <ShoppingCart />
+            <CartVisibilityWrapper />
           </CartProvider>
         </ThemeProvider>
       </body>
