@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { AuthButton } from '@/components/auth-button'
 import { createClient } from '@supabase/supabase-js'
 import Navbar from '@/components/ui/navbar'
