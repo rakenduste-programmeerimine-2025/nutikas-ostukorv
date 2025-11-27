@@ -7,8 +7,7 @@ export default function SignUpSuccessPage() {
         </h1>
 
         <p className="text-gray-400 leading-relaxed">
-          We’ve sent a confirmation email to your inbox.<br />
-          Please verify your email before logging in.
+          Please login using with the credentials you just created.
         </p>
 
         <a
