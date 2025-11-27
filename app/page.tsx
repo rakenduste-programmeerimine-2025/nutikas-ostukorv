@@ -1,12 +1,20 @@
-import { AuthButton } from '@/components/auth-button'
-import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import Navbar from '@/components/ui/navbar'
-import ProductModalWrapper from '@/components/product-modal-wrapper'
 import PillsNav from '@/components/ui/pills-nav'
+import ProductModalWrapper from '@/components/product-modal-wrapper'
 import Link from 'next/link'
+import { Card, CardContent, CardTitle } from '@/components/ui/card'
+import GlobalProductSearch from '@/components/ui/global-product-search'
+import { createClient } from '@/lib/supabase/server'
+import { AuthButton } from '@/components/auth-button'
 
+export default async function Home() {
+  const supabase = await createClient()
+  const { data: allProducts, error } = await supabase.from('product').select('*')
 
-export default function Home() {
+  if (error) {
+    console.error('Error loading products:', error)
+  }
+
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-14 items-center">
@@ -15,22 +23,7 @@ export default function Home() {
         <PillsNav active="Otsing" />
 
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
-          <div className="w-full flex flex-col items-center gap-6">
-            <h2 className="text-2xl font-medium">Sisesta toote nimi</h2>
-
-            <div className="w-full max-w-2xl">
-              <div className="flex items-center gap-3 border rounded-full px-4 py-3">
-                <input
-                  className="flex-1 bg-transparent outline-none"
-                  placeholder="Otsi toodet"
-                  aria-label="Otsi toodet"
-                />
-                <button aria-label="clear" className="text-sm opacity-60">
-                  ×
-                </button>
-              </div>
-            </div>
-          </div>
+          <GlobalProductSearch allProducts={allProducts || []} />
 
           <section className="w-full mt-16">
             <h3 className="text-center text-2xl mb-8">Kategooriad</h3>
