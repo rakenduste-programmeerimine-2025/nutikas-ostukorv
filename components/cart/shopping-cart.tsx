@@ -5,7 +5,7 @@ import { useCart } from './cart-context'
 import { Trash2 } from 'lucide-react'
 
 export default function ShoppingCart() {
-  const { items, totalItems, removeItem, updateQty } = useCart()
+  const { items, totalItems, removeItem, updateQty, clear } = useCart()
   const [open, setOpen] = React.useState(false)
 
   const [sortBy, setSortBy] = React.useState<
@@ -73,7 +73,11 @@ export default function ShoppingCart() {
         <div className="absolute right-0 mt-2 w-[28rem] bg-background border rounded shadow-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold">Ostukorv</h4>
-            <button className="flex items-center gap-1 text-sm text-sm text-white hover:text-red-400">
+
+            <button
+              className="flex items-center gap-1 text-sm text-foreground hover:text-red-500/80"
+              onClick={clear}
+            >
               <Trash2 className="w-4 h-4" />
               Tühjenda
             </button>
@@ -127,7 +131,7 @@ export default function ShoppingCart() {
                     }
                   />
                   <button
-                    className="text-sm text-white hover:text-red-400"
+                    className="flex items-center gap-1 text-sm text-foreground hover:text-red-500/80"
                     onClick={() => removeItem(it.product.id)}
                   >
                     Eemalda
