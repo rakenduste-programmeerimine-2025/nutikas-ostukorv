@@ -13,7 +13,7 @@ export default function PillsNav({ active }: PillsNavProps) {
   ]
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="inline-flex rounded-lg border border-border bg-background p-1.5 text-base">
       {links.map(link => {
         const isActive = active === link.label
 
@@ -21,11 +21,11 @@ export default function PillsNav({ active }: PillsNavProps) {
           <Link
             key={link.href}
             href={link.href}
-            className={
+            className={`px-4 py-2 rounded-md transition-colors whitespace-nowrap ${
               isActive
-                ? 'px-4 py-2 rounded-md bg-primary text-primary-foreground'
-                : 'px-4 py-2 rounded-md bg-card text-card-foreground border'
-            }
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted'
+            }`}
           >
             {link.label}
           </Link>
