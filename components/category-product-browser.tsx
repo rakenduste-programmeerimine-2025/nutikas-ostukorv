@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import FilterBar from '@/components/ui/filter-bar'
+import FilterBar from '@/components/ui/category-filter-bar'
 import SearchableProductGrid from '@/components/searchable-product-grid'
 
 export default function CategoryProductBrowser({ products, stores }) {
@@ -25,9 +25,9 @@ export default function CategoryProductBrowser({ products, stores }) {
   return (
     <div className="w-full flex flex-col gap-6">
       <FilterBar
-        categories={[]}
+        //categories={[]}
         stores={stores}
-        selectedCategory={null}
+        //selectedCategory={null}
         onCategoryChange={() => {}}
         selectedStore={selectedStore}
         onStoreChange={setSelectedStore}
