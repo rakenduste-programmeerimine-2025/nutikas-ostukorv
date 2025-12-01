@@ -27,16 +27,29 @@ export default function SearchableProductGrid({
 }) {
   const [query, setQuery] = useState('')
 
-  const filteredProducts = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(query.toLowerCase())
+  )
 
   return (
     <>
-      <div className="w-full max-w-xl mb-4">
+      <div className="w-full flex justify-center mb-4">
         <input
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder={`Otsi toodet kategoorias "${categoryName}"`}
-          className="w-full border rounded-full px-4 py-3 bg-background text-foreground outline-none"
+          placeholder="Otsi toodet"
+          className="
+            w-full 
+            max-w-xl 
+            mx-auto 
+            border 
+            rounded-full 
+            px-4 
+            py-3 
+            bg-background 
+            text-foreground 
+            outline-none
+          "
         />
       </div>
 
