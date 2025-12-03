@@ -4,6 +4,7 @@ import * as React from 'react'
 import ProductCard, { Product } from './product-card'
 import FilterBar from './ui/filter-bar'
 import ProductSearch from './product-search'
+import ProductInfoModal from '@/components/ui/product-info-modal'
 
 export default function BrowseProducts() {
   const [page, setPage] = React.useState(1)
@@ -19,6 +20,8 @@ export default function BrowseProducts() {
   const [searchQuery, setSearchQuery] = React.useState('')
   const [total, setTotal] = React.useState(0)
   const [loading, setLoading] = React.useState(false)
+  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null)
+
   const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)))
 
   React.useEffect(() => {
@@ -128,14 +131,24 @@ export default function BrowseProducts() {
               <div key={i} className="h-40 bg-muted-foreground/20 rounded" />
             ))
           : products.map(p => (
-              <ProductCard
+              <div
                 key={p.id}
-                product={p}
-                categoryName={categoriesMap[String((p as any).category_id)]?.name}
-                storeName={storesMap[String((p as any).store_id)]?.name}
-              />
+                onClick={() => setSelectedProduct(p)}
+                className="cursor-pointer"
+              >
+                <ProductCard
+                  product={p}
+                  categoryName={categoriesMap[String((p as any).category_id)]?.name}
+                  storeName={storesMap[String((p as any).store_id)]?.name}
+                />
+              </div>
             ))}
       </div>
+
+      <ProductInfoModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
 
       <div className="flex items-center justify-center gap-3 mt-6">
         <button
@@ -148,7 +161,6 @@ export default function BrowseProducts() {
 
         <div className="flex items-center gap-2">
           {Array.from({ length: Math.min(7, totalPages) }).map((_, i) => {
-            // show a sliding window around current page
             const start = Math.max(1, Math.min(page - 3, totalPages - 6))
             const p = start + i
             if (p > totalPages) return null
