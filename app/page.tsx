@@ -3,10 +3,8 @@ import PillsNav from '@/components/ui/pills-nav'
 import ProductModalWrapper from '@/components/product-modal-wrapper'
 import Link from 'next/link'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
-
 import { createClient } from '@/lib/supabase/server'
 import { AuthButton } from '@/components/auth-button'
-
 import HomeClientWrapper from '@/components/home-client-wrapper'
 
 export default async function Home() {
@@ -20,12 +18,16 @@ export default async function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-14 items-center">
-        <Navbar right={<AuthButton />} />
+
+        <Navbar
+          right={<AuthButton />}
+          globalSearch={<HomeClientWrapper allProducts={allProducts || []} />}
+        />
 
         <PillsNav active="Otsing" />
 
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
-          <HomeClientWrapper allProducts={allProducts || []} />
+
 
           <section className="w-full mt-16">
             <h3 className="text-center text-2xl mb-8">Kategooriad</h3>

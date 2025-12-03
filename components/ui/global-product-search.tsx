@@ -26,11 +26,10 @@ export default function GlobalProductSearch({
   }
 
   return (
-    <div className="w-full flex flex-col items-center gap-6 relative">
-      <h2 className="text-2xl font-medium">Sisesta toote nimi</h2>
+    <div className="w-full flex flex-col items-center gap-4 relative">
 
-      <div className="w-full max-w-2xl relative">
-        <div className="flex items-center gap-3 border rounded-full px-4 py-3">
+      <div className="w-full max-w-lg relative">
+        <div className="flex items-center gap-3 border rounded-full px-4 py-2">
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
