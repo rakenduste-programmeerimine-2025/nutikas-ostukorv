@@ -1,24 +1,48 @@
 import asyncio
+import re
+from typing import List, Dict, Any
+
 from playwright.async_api import async_playwright
-import csv
+
+from .supabase_client import upsert_products
 
 CATEGORY_ID = 5
 STORE_ID = 1
 URL = "https://www.selver.ee/puu-ja-koogiviljad"
 
 
-def parse_price(text):
+def parse_price(text: str | None) -> float | None:
+    """Parse a price string from Selver into a float.
+
+    Selver price texts can contain currency symbols and units like "€/kg".
+    We extract the first numeric part (e.g. "1,29" from "1,29 €/kg").
+    """
     if not text:
         return None
-    clean = text.replace("€", "").replace(",", ".").strip()
+
+    # Normalise whitespace and strip currency symbol
+    clean = text.replace("\xa0", " ").replace("€", "").strip()
+
+    # Find the first number fragment (supports integers and decimals with , or .)
+    m = re.search(r"(\d+[.,]\d+|\d+)", clean)
+    if not m:
+        return None
+
+    number_str = m.group(1).replace(",", ".")
     try:
-        return float(clean)
-    except:
+        return float(number_str)
+    except ValueError:
         return None
 
 
-async def scrape_selver():
-    rows = []
+async def scrape_selver(
+    url: str = URL,
+    category_id: int = CATEGORY_ID,
+    store_id: int = STORE_ID,
+) -> List[Dict[str, Any]]:
+    """Scrape Selver products and return a list of product dicts."""
+
+    rows: List[Dict[str, Any]] = []
 
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(
@@ -28,7 +52,7 @@ async def scrape_selver():
         page = await browser.new_page()
 
         print("Opening Selver…")
-        await page.goto(URL, timeout=60000, wait_until="networkidle")
+        await page.goto(url, timeout=60000, wait_until="networkidle")
 
         for _ in range(20):
             await page.mouse.wheel(0, 2000)
@@ -50,7 +74,15 @@ async def scrape_selver():
             if name:
                 name = name.strip()
 
-            price_el = card.locator(".Price__value")
+            # Selver currently exposes prices via ProductPrice__unit-price (e.g. "0,74 €/kg").
+            # There can be multiple unit-price spans (e.g. original + discounted), so
+            # take the first one. Fall back to Price__main if needed.
+            unit_prices = card.locator(".ProductPrice__unit-price")
+            if await unit_prices.count():
+                price_el = unit_prices.first
+            else:
+                price_el = card.locator(".Price__main").first
+
             price_text = await price_el.inner_text() if await price_el.count() else None
             price = parse_price(price_text)
 
@@ -61,23 +93,31 @@ async def scrape_selver():
                 data_src = await img.get_attribute("data-src")
                 image_url = data_src or src
 
-            rows.append([CATEGORY_ID, name, price, STORE_ID, image_url])
+            rows.append(
+                {
+                    "category_id": category_id,
+                    "name": name,
+                    "price": price,
+                    "store_id": store_id,
+                    "image_url": image_url,
+                }
+            )
 
         await browser.close()
         return rows
 
 
-async def save_to_csv(filename="selver_products.csv"):
-    rows = await scrape_selver()
+async def scrape_and_upsert_selver(
+    url: str = URL,
+    category_id: int = CATEGORY_ID,
+    store_id: int = STORE_ID,
+) -> None:
+    """Convenience function: scrape Selver and upsert into Supabase."""
 
-    with open(filename, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(
-            ["category_id", "name", "price", "store_id", "image_url"]
-        )
-        writer.writerows(rows)
-
-    print(f"Done — {len(rows)} products saved into {filename}")
+    rows = await scrape_selver(url=url, category_id=category_id, store_id=store_id)
+    upsert_products(rows)
+    print(f"Upserted {len(rows)} Selver products into Supabase.")
 
 
-await save_to_csv()
+if __name__ == "__main__":
+    asyncio.run(scrape_and_upsert_selver())
