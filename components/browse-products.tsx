@@ -27,6 +27,7 @@ export default function BrowseProducts() {
   React.useEffect(() => {
     let canceled = false
     setLoading(true)
+
     const params = new URLSearchParams({ page: String(page), limit: String(limit) })
     if (selectedCategory) params.set('category', selectedCategory)
     if (selectedStore) params.set('store', selectedStore)
@@ -55,10 +56,6 @@ export default function BrowseProducts() {
       canceled = true
     }
   }, [page, limit, selectedCategory, selectedStore, minPrice, maxPrice, selectedSort, searchQuery])
-
-  function goto(p: number) {
-    setPage(Math.min(Math.max(1, p), totalPages))
-  }
 
   const categoriesMap = Object.fromEntries((categories ?? []).map((c: any) => [String(c.id), c]))
   const storesMap = Object.fromEntries((stores ?? []).map((s: any) => [String(s.id), s]))
@@ -134,7 +131,7 @@ export default function BrowseProducts() {
               <div
                 key={p.id}
                 onClick={() => setSelectedProduct(p)}
-                className="cursor-pointer"
+                className="cursor-pointer min-h-[320px] flex"
               >
                 <ProductCard
                   product={p}
@@ -149,41 +146,6 @@ export default function BrowseProducts() {
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
       />
-
-      <div className="flex items-center justify-center gap-3 mt-6">
-        <button
-          onClick={() => goto(page - 1)}
-          disabled={page <= 1}
-          className="px-3 py-1 border rounded disabled:opacity-50"
-        >
-          Eelmine
-        </button>
-
-        <div className="flex items-center gap-2">
-          {Array.from({ length: Math.min(7, totalPages) }).map((_, i) => {
-            const start = Math.max(1, Math.min(page - 3, totalPages - 6))
-            const p = start + i
-            if (p > totalPages) return null
-            return (
-              <button
-                key={p}
-                onClick={() => goto(p)}
-                className={`px-3 py-1 rounded border ${p === page ? 'bg-foreground text-background' : ''}`}
-              >
-                {p}
-              </button>
-            )
-          })}
-        </div>
-
-        <button
-          onClick={() => goto(page + 1)}
-          disabled={page >= totalPages}
-          className="px-3 py-1 border rounded disabled:opacity-50"
-        >
-          Järgmine
-        </button>
-      </div>
     </div>
   )
 }
