@@ -49,7 +49,8 @@ export function ProductCard({ product, categoryName, storeName, onAdd }: Product
           variant="default"
           size="icon"
           className="absolute top-3 right-3 rounded-full shadow-md bg-green-500 hover:bg-green-600 text-white"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation()
             onAdd?.(product)
             cart?.addItem(product as any)
           }}
