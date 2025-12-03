@@ -25,7 +25,7 @@ export default function SearchableProductGrid({
   categoryName: string
   products: Product[]
   storesMap: Record<string, Store>
-  onSelectProduct?: (product: Product) => void
+  onSelectProduct: (product: Product) => void
 }) {
   const [query, setQuery] = useState('')
 
@@ -59,7 +59,7 @@ export default function SearchableProductGrid({
         {filteredProducts.map(p => (
           <div
             key={p.id}
-            onClick={() => onSelectProduct?.(p)}
+            onClick={() => onSelectProduct(p)}
             className="cursor-pointer"
           >
             <ProductCard

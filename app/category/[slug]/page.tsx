@@ -3,6 +3,7 @@ import Navbar from '@/components/ui/navbar'
 import { AuthButton } from '@/components/auth-button'
 import { createClient } from '@/lib/supabase/server'
 import CategoryProductBrowser from '@/components/category-product-browser'
+import CategoryClientWrapper from '@/components/category-client-wrapper'
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -27,7 +28,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-14 items-center">
-        <Navbar right={<AuthButton />} />
+
+        <Navbar
+          right={<AuthButton />}
+          globalSearch={<CategoryClientWrapper allProducts={products ?? []} />}
+        />
 
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
           <h1 className="text-3xl font-bold mb-4">{category.name}</h1>
