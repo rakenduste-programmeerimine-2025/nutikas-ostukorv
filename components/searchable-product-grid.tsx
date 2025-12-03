@@ -20,10 +20,12 @@ export default function SearchableProductGrid({
   categoryName,
   products,
   storesMap,
+  onSelectProduct,
 }: {
   categoryName: string
   products: Product[]
   storesMap: Record<string, Store>
+  onSelectProduct?: (product: Product) => void
 }) {
   const [query, setQuery] = useState('')
 
@@ -55,12 +57,17 @@ export default function SearchableProductGrid({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
         {filteredProducts.map(p => (
-          <ProductCard
+          <div
             key={p.id}
-            product={p}
-            categoryName={categoryName}
-            storeName={storesMap[String(p.store_id)]?.name}
-          />
+            onClick={() => onSelectProduct?.(p)}
+            className="cursor-pointer"
+          >
+            <ProductCard
+              product={p}
+              categoryName={categoryName}
+              storeName={storesMap[String(p.store_id)]?.name}
+            />
+          </div>
         ))}
       </div>
 

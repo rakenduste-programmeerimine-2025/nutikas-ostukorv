@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import FilterBar from '@/components/ui/category-filter-bar'
 import SearchableProductGrid from '@/components/searchable-product-grid'
+import ProductInfoModal from '@/components/ui/product-info-modal'
 
 export default function CategoryProductBrowser({ products, stores }) {
   const [selectedStore, setSelectedStore] = useState<string | null>(null)
@@ -10,6 +11,7 @@ export default function CategoryProductBrowser({ products, stores }) {
   const [maxPrice, setMaxPrice] = useState('')
   const [limit, setLimit] = useState(30)
   const [sort, setSort] = useState<string | null>('price_asc')
+  const [selectedProduct, setSelectedProduct] = useState(null)
 
   const filtered = products
     .filter(p => (selectedStore ? String(p.store_id) === selectedStore : true))
@@ -25,9 +27,7 @@ export default function CategoryProductBrowser({ products, stores }) {
   return (
     <div className="w-full flex flex-col gap-6">
       <FilterBar
-        //categories={[]}
         stores={stores}
-        //selectedCategory={null}
         onCategoryChange={() => {}}
         selectedStore={selectedStore}
         onStoreChange={setSelectedStore}
@@ -52,7 +52,10 @@ export default function CategoryProductBrowser({ products, stores }) {
         categoryName=""
         products={filtered}
         storesMap={Object.fromEntries(stores.map(s => [String(s.id), s]))}
+        onSelectProduct={setSelectedProduct}
       />
+
+      <ProductInfoModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
     </div>
   )
 }
