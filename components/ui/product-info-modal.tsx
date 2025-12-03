@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import type { Product } from '@/components/product-card'
 
+import { useCart } from '@/components/cart/cart-context'
+
 interface ProductInfoModalProps {
   product: Product | null
   categoryName?: string
@@ -18,6 +20,14 @@ export default function ProductInfoModal({
 }: ProductInfoModalProps) {
   const [quantity, setQuantity] = useState(1)
 
+  const cart = (() => {
+    try {
+      return useCart()
+    } catch {
+      return null
+    }
+  })()
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -25,6 +35,10 @@ export default function ProductInfoModal({
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
+
+  useEffect(() => {
+    setQuantity(1)
+  }, [product])
 
   if (!product) return null
 
@@ -52,6 +66,7 @@ export default function ProductInfoModal({
             className="w-full h-full object-contain"
           />
         </div>
+
         <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
 
         {categoryName && (
@@ -86,7 +101,13 @@ export default function ProductInfoModal({
             bg-primary text-primary-foreground 
             hover:bg-primary/90 transition
           "
-          onClick={() => onAddToCart?.(product, quantity)}
+          onClick={() => {
+            cart?.addItem(product as any, quantity)
+
+            onAddToCart?.(product, quantity)
+
+            onClose()
+          }}
         >
           Lisa korvi
         </button>
