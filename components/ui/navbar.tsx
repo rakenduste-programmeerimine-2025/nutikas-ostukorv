@@ -31,16 +31,21 @@ export default function Navbar({ title = 'Nutikas ostukorv', right }: NavbarProp
               strokeWidth="2"
               viewBox="0 0 24 24"
             >
-              <path
+              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+              <line
+                x1="16"
+                y1="16"
+                x2="21"
+                y2="21"
+                stroke="currentColor"
+                strokeWidth="2"
                 strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 3a7.5 7.5 0 006.15 12.65z"
               />
             </svg>
 
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Otsi tooteid..."
               className="pl-10 pr-3 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black/20 transition w-48 placeholder:text-gray-400"
             />
           </div>
