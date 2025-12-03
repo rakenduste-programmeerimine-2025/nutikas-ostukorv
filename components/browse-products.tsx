@@ -15,7 +15,7 @@ export default function BrowseProducts() {
   const [selectedStore, setSelectedStore] = React.useState<string | null>(null)
   const [minPrice, setMinPrice] = React.useState('')
   const [maxPrice, setMaxPrice] = React.useState('')
-  const [selectedSort, setSelectedSort] = React.useState<string | null>(null)
+  const [selectedSort, setSelectedSort] = React.useState<string | null>('price_asc')
   const [searchQuery, setSearchQuery] = React.useState('')
   const [total, setTotal] = React.useState(0)
   const [loading, setLoading] = React.useState(false)
