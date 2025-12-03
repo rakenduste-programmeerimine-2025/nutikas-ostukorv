@@ -4,8 +4,6 @@ import ProductModalWrapper from '@/components/product-modal-wrapper'
 import Link from 'next/link'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 
-import GlobalProductSearch from '@/components/ui/global-product-search'
-
 import { createClient } from '@/lib/supabase/server'
 import { AuthButton } from '@/components/auth-button'
 
