@@ -40,6 +40,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Python / backend
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.log
+.pytest_cache/
+.mypy_cache/
 
 # Supabase local data
 .supabase/volumes
