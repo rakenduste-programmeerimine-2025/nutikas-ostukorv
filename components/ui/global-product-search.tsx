@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function GlobalProductSearch({
   allProducts,
@@ -11,11 +12,18 @@ export default function GlobalProductSearch({
 }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<any[]>([])
+  const router = useRouter()
 
   useEffect(() => {
     if (query.length < 4) return setResults([])
     setResults(allProducts.filter(p => p.name.toLowerCase().includes(query.toLowerCase())))
   }, [query, allProducts])
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && query.length > 0) {
+      router.push(`/search?query=${encodeURIComponent(query)}`)
+    }
+  }
 
   return (
     <div className="w-full flex flex-col items-center gap-6 relative">
@@ -26,16 +34,13 @@ export default function GlobalProductSearch({
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="flex-1 bg-transparent outline-none"
             placeholder="Otsi toodet (min 4 tähemärki)"
           />
 
           {query && (
-            <button
-              aria-label="clear"
-              className="text-sm opacity-60"
-              onClick={() => setQuery('')}
-            >
+            <button aria-label="clear" className="text-sm opacity-60" onClick={() => setQuery('')}>
               ×
             </button>
           )}
