@@ -1,30 +1,43 @@
 import requests
 from bs4 import BeautifulSoup
-import csv
+from typing import List, Dict, Any
+
+from .supabase_client import upsert_products
 
 CATEGORY_ID = 1
 STORE_ID = 1
+URL = "https://coophaapsalu.ee/tootekategooria/piimatooted-munad-void/piim/"
 
-def parse_price(price_text: str) -> float:
+
+def parse_price(price_text: str) -> float | None:
     clean = (
         price_text.replace("€", "").replace(" ", "").replace(",", ".").strip()
     )
     try:
         return float(clean)
-    except:
+    except Exception:
         return None
 
 
-def scrape_coop():
-    url = "https://coophaapsalu.ee/tootekategooria/piimatooted-munad-void/piim/"
+def scrape_coop(
+    url: str = URL,
+    category_id: int = CATEGORY_ID,
+    store_id: int = STORE_ID,
+) -> List[Dict[str, Any]]:
+    """Scrape Coop products and return a list of product dicts.
+
+    Each dict has keys: name, price, image_url, category_id, store_id.
+    """
+
     headers = {"User-Agent": "Mozilla/5.0"}
 
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=30)
+    response.raise_for_status()
     soup = BeautifulSoup(response.text, "lxml")
 
     products = soup.select("ul.products li.product")
 
-    rows = []
+    rows: List[Dict[str, Any]] = []
 
     for product in products:
         name_el = product.select_one("h2.woocommerce-loop-product__title")
@@ -41,16 +54,31 @@ def scrape_coop():
         price_text = price_el.text.strip() if price_el else "0"
         price = parse_price(price_text)
 
-        rows.append([CATEGORY_ID, name, price, STORE_ID, image_url])
+        rows.append(
+            {
+                "category_id": category_id,
+                "name": name,
+                "price": price,
+                "store_id": store_id,
+                "image_url": image_url,
+            }
+        )
 
-    # 📝 include image_url column
-    with open("coop_products.csv", "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(["category_id", "name", "price", "store_id", "image_url"])
-        writer.writerows(rows)
+    print(f"Done (COOP) — {len(rows)} products scraped from Coop")
+    return rows
 
-    print(f"Done (COOP) — {len(rows)} products scraped into coop_products.csv")
+
+def scrape_and_upsert_coop(
+    url: str = URL,
+    category_id: int = CATEGORY_ID,
+    store_id: int = STORE_ID,
+) -> None:
+    """Convenience function: scrape Coop and upsert into Supabase."""
+
+    rows = scrape_coop(url=url, category_id=category_id, store_id=store_id)
+    upsert_products(rows)
+    print(f"Upserted {len(rows)} Coop products into Supabase.")
 
 
 if __name__ == "__main__":
-    scrape_coop()
+    scrape_and_upsert_coop()

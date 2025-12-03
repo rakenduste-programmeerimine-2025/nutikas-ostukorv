@@ -1,8 +1,11 @@
 import asyncio
+from typing import List, Dict, Any
+
 from playwright.async_api import async_playwright
-import csv
 import time
 import nest_asyncio
+
+from .supabase_client import upsert_products
 
 nest_asyncio.apply()
 
@@ -13,7 +16,15 @@ CATEGORY_ID = 3
 STORE_ID = 2
 
 
-async def scrape_rimi():
+async def scrape_rimi(
+    url: str = URL,
+    category_id: int = CATEGORY_ID,
+    store_id: int = STORE_ID,
+) -> List[Dict[str, Any]]:
+    """Scrape Rimi products and return a list of product dicts."""
+
+    products: List[Dict[str, Any]] = []
+
     print("Launching Playwright...")
     async with async_playwright() as p:
         browser = await p.chromium.launch(
@@ -32,8 +43,7 @@ async def scrape_rimi():
             """Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"""
         )
 
-        current_url = URL
-        products = []
+        current_url = url
 
         while True:
             print("Opening:", current_url)
@@ -67,7 +77,7 @@ async def scrape_rimi():
 
                 try:
                     price = float(f"{euro}.{cents}")
-                except:
+                except Exception:
                     continue
 
                 img_wrapper = card.locator(".card__image-wrapper img").first
@@ -85,7 +95,15 @@ async def scrape_rimi():
                         elif image_url.startswith("/"):
                             image_url = BASE_URL + image_url
 
-                products.append([CATEGORY_ID, name, price, STORE_ID, image_url])
+                products.append(
+                    {
+                        "category_id": category_id,
+                        "name": name,
+                        "price": price,
+                        "store_id": store_id,
+                        "image_url": image_url,
+                    }
+                )
 
             next_btn = page.locator("a[aria-label='Järgmine']")
             if not await next_btn.count():
@@ -108,15 +126,18 @@ async def scrape_rimi():
     print("Scraping done.")
     return products
 
-async def save_to_csv(filename="rimi_products.csv"):
-    rows = await scrape_rimi()
 
-    print("Saving CSV...")
-    with open(filename, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(["category_id", "name", "price", "store_id", "image_url"])
-        writer.writerows(rows)
+async def scrape_and_upsert_rimi(
+    url: str = URL,
+    category_id: int = CATEGORY_ID,
+    store_id: int = STORE_ID,
+) -> None:
+    """Convenience function: scrape Rimi and upsert into Supabase."""
 
-    print(f"Done — {len(rows)} products saved into {filename}")
+    rows = await scrape_rimi(url=url, category_id=category_id, store_id=store_id)
+    upsert_products(rows)
+    print(f"Upserted {len(rows)} Rimi products into Supabase.")
 
-await save_to_csv()
+
+if __name__ == "__main__":
+    asyncio.run(scrape_and_upsert_rimi())

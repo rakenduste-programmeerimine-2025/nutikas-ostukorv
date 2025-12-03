@@ -5,7 +5,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "scraper": "./.venv/bin/python -m scrapers.run_category_simple"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.1",
