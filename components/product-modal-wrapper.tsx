@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ProductCard, { Product } from '@/components/product-card'
+import ProductInfoModal from '@/components/ui/product-info-modal'
 
 export default function ProductModalWrapper() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -13,7 +14,11 @@ export default function ProductModalWrapper() {
     const fetchProducts = async () => {
       setLoading(true)
       const supabase = createClient()
-      const { data, error } = await supabase.from('product').select('*').in('id', [133, 214, 15])
+      const { data, error } = await supabase
+        .from('product')
+        .select('*')
+        .in('id', [133, 214, 15])
+
       if (!error && data) {
         setProducts(data)
       }
@@ -33,9 +38,7 @@ export default function ProductModalWrapper() {
           products.map(product => (
             <div
               key={product.id}
-              onClick={() => {
-                setSelectedProduct(product)
-              }}
+              onClick={() => setSelectedProduct(product)}
               className="cursor-pointer"
             >
               <ProductCard product={product} />
@@ -43,6 +46,15 @@ export default function ProductModalWrapper() {
           ))
         )}
       </div>
+
+      <ProductInfoModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        categoryName={selectedProduct?.category_name}
+        onAddToCart={(product, qty) => {
+          console.log('Added to cart:', product, 'qty:', qty)
+        }}
+      />
     </>
   )
 }
