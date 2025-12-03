@@ -1,4 +1,5 @@
 import asyncio
+import re
 from typing import List, Dict, Any
 
 from playwright.async_api import async_playwright
@@ -11,12 +12,26 @@ URL = "https://www.selver.ee/puu-ja-koogiviljad"
 
 
 def parse_price(text: str | None) -> float | None:
+    """Parse a price string from Selver into a float.
+
+    Selver price texts can contain currency symbols and units like "€/kg".
+    We extract the first numeric part (e.g. "1,29" from "1,29 €/kg").
+    """
     if not text:
         return None
-    clean = text.replace("€", "").replace(",", ".").strip()
+
+    # Normalise whitespace and strip currency symbol
+    clean = text.replace("\xa0", " ").replace("€", "").strip()
+
+    # Find the first number fragment (supports integers and decimals with , or .)
+    m = re.search(r"(\d+[.,]\d+|\d+)", clean)
+    if not m:
+        return None
+
+    number_str = m.group(1).replace(",", ".")
     try:
-        return float(clean)
-    except Exception:
+        return float(number_str)
+    except ValueError:
         return None
 
 
@@ -59,7 +74,15 @@ async def scrape_selver(
             if name:
                 name = name.strip()
 
-            price_el = card.locator(".Price__value")
+            # Selver currently exposes prices via ProductPrice__unit-price (e.g. "0,74 €/kg").
+            # There can be multiple unit-price spans (e.g. original + discounted), so
+            # take the first one. Fall back to Price__main if needed.
+            unit_prices = card.locator(".ProductPrice__unit-price")
+            if await unit_prices.count():
+                price_el = unit_prices.first
+            else:
+                price_el = card.locator(".Price__main").first
+
             price_text = await price_el.inner_text() if await price_el.count() else None
             price = parse_price(price_text)
 

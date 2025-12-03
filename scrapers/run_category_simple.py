@@ -28,7 +28,7 @@ CONFIG: Dict[str, Any] = {
         # store_name in DB -> scraper + URL
         # Enable/disable stores by commenting them in/out.
         "Coop": {
-            "enabled": True,
+            "enabled": False,
             "scraper": "coop",
             "url": "https://coophaapsalu.ee/tootekategooria/kuivained-kastmed/maitseained/",
         },
@@ -38,7 +38,7 @@ CONFIG: Dict[str, Any] = {
             "url": "https://www.rimi.ee/epood/ee/tooted/kauasailivad-toidukaubad/maitseained/c/SH-13-12",
         },
         "Selver": {
-            "enabled": False,
+            "enabled": True,
             "scraper": "selver",
             "url": "https://www.selver.ee/maitseained-ja-puljongid/maitseained",
         },
