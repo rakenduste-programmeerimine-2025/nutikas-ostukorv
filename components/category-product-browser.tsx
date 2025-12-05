@@ -55,7 +55,10 @@ export default function CategoryProductBrowser({ products, stores }) {
         onSelectProduct={setSelectedProduct}
       />
 
-      <ProductInfoModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      <ProductInfoModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </div>
   )
 }
