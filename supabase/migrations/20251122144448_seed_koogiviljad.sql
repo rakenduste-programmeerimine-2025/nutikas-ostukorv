@@ -46,7 +46,6 @@ VALUES
     (2, 'Kartul kg lahtine Eesti', 0.39, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/04/23009557.jpg'),
     (2, 'Kartul kol.pestud Talukartul 2.5kg Eesti', 3.19, 1, 'https://coophaapsalu.ee/wp-content/uploads/2021/04/4742050000109.jpg'),
     (2, 'Kartul pestud 2kg pakitud Eesti', 2.49, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/08/4740246200050.jpg'),
-    (2, 'Kartul pestud 2kg pakitud Eesti', 2.79, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/08/4743116000163.jpg'),
     (2, 'Kartul pun.pestud Talukartul 2.5kg Eesti', 2.99, 1, 'https://coophaapsalu.ee/wp-content/uploads/2021/04/4742050000130.jpg'),
     (2, 'Kartul punane kg lahtine Eesti', 0.59, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/09/23030276.jpg'),
     (2, 'Keedetud kikerhernes 250g Dimdini', 1.29, 1, 'https://coophaapsalu.ee/wp-content/uploads/2020/05/4751001622994.png'),
