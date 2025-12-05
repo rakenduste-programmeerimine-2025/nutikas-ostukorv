@@ -38,7 +38,11 @@ export function ProductCard({ product, categoryName, storeName, onAdd }: Product
     <Card className="w-full overflow-hidden relative pb-12">
       <div className="relative">
         {product.image_url ? (
-          <img src={product.image_url} alt={product.name} className="w-full h-44 object-cover" />
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="w-full h-44 object-contain bg-white dark:bg-black"
+          />
         ) : (
           <div className="w-full h-44 bg-gray-100 flex items-center justify-center text-sm text-muted-foreground">
             No image
@@ -49,7 +53,7 @@ export function ProductCard({ product, categoryName, storeName, onAdd }: Product
           variant="default"
           size="icon"
           className="absolute top-3 right-3 rounded-full shadow-md bg-green-500 hover:bg-green-600 text-white"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             onAdd?.(product)
             cart?.addItem(product as any)
