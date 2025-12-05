@@ -3,7 +3,6 @@
 import * as React from 'react'
 import ProductCard, { Product } from './product-card'
 import FilterBar from './ui/filter-bar'
-import ProductSearch from './product-search'
 import ProductInfoModal from '@/components/ui/product-info-modal'
 
 export default function BrowseProducts() {
@@ -63,14 +62,6 @@ export default function BrowseProducts() {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-4 mb-6">
-        <ProductSearch
-          value={searchQuery}
-          onSearchChange={v => {
-            setSearchQuery(v)
-            setPage(1)
-          }}
-        />
-
         <div className="flex items-center justify-between">
           <FilterBar
             categories={categories}
@@ -115,10 +106,6 @@ export default function BrowseProducts() {
               setPage(1)
             }}
           />
-
-          <div className="text-sm text-muted-foreground">
-            Kuvatud {(products ?? []).length} of {total}
-          </div>
         </div>
       </div>
 
