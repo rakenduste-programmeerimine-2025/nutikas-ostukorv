@@ -9,11 +9,7 @@ import HomeClientWrapper from '@/components/home-client-wrapper'
 
 export default async function Home() {
   const supabase = await createClient()
-  const { data: allProducts, error } = await supabase.from('product').select('*')
-
-  if (error) {
-    console.error('Error loading products:', error)
-  }
+  const { data: allProducts } = await supabase.from('product').select('*')
 
   return (
     <main className="min-h-screen flex flex-col items-center bg-background">
@@ -23,7 +19,7 @@ export default async function Home() {
           globalSearch={<HomeClientWrapper allProducts={allProducts || []} />}
         />
 
-        <header className="w-full bg-gradient-to-r from-sky-50 via-white to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-800 py-12">
+        <header className="w-full bg-gradient-to-r from-neutral-200 to-white dark:from-neutral-900 dark:to-neutral-800 bg-[length:200%_200%] animate-[gradientShift_12s_ease_infinite] py-12 border-b border-border">
           <div className="max-w-5xl mx-auto px-6 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-5">Leia parimad tooted kiirelt</h1>
             <p className="text-muted-foreground max-w-4xl mx-auto">
@@ -35,6 +31,7 @@ export default async function Home() {
 
         <div className="w-full max-w-5xl p-6 mx-auto flex flex-col items-center gap-12">
           <PillsNav active="Otsing" />
+
           <section className="w-full">
             <h3 className="text-center text-2xl mb-6 font-semibold">Kategooriad</h3>
 
@@ -124,9 +121,8 @@ export default async function Home() {
                         />
                       </div>
 
-                      <CardContent>
-                        <CardTitle>{cat.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground mt-2">Kategooria kirjeldus</p>
+                      <CardContent className="flex flex-col items-center justify-center py-4">
+                        <CardTitle className="text-center">{cat.name}</CardTitle>
                       </CardContent>
                     </Card>
                   </Link>
