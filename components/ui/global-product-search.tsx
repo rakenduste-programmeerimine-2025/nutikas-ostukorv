@@ -15,8 +15,18 @@ export default function GlobalProductSearch({
   const router = useRouter()
 
   useEffect(() => {
-    if (query.length < 4) return setResults([])
-    setResults(allProducts.filter(p => p.name.toLowerCase().includes(query.toLowerCase())))
+    const q = query.trim().toLowerCase()
+    if (q.length === 0) {
+      setResults([])
+      return
+    }
+
+    const filtered = allProducts.filter((p: any) => {
+      const name = (p?.name ?? '').toString().toLowerCase()
+      return name.includes(q)
+    })
+
+    setResults(filtered)
   }, [query, allProducts])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -27,7 +37,6 @@ export default function GlobalProductSearch({
 
   return (
     <div className="w-full flex flex-col items-center gap-4 relative">
-
       <div className="w-full max-w-lg relative">
         <div className="flex items-center gap-3 border rounded-full px-4 py-2">
           <input
