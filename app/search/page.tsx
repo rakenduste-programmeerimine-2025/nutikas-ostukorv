@@ -2,58 +2,62 @@ import Navbar from '@/components/ui/navbar'
 import PillsNav from '@/components/ui/pills-nav'
 import { createClient } from '@/lib/supabase/server'
 import { AuthButton } from '@/components/auth-button'
-import ProductCard from '@/components/product-card'
+// ProductCard is rendered inside the client wrapper
 import Link from 'next/link'
+import SearchResultsClient from '@/components/ui/search-results-client'
 
-export default async function SearchPage({ searchParams }: { searchParams: { query?: string } }) {
-  const query = searchParams.query || ''
+export default async function SearchPage({ searchParams }: { searchParams: any }) {
+  // `searchParams` can be a Promise in some Next.js setups — await it to be safe
+  const resolvedParams = await searchParams
+  const query = (resolvedParams?.query as string) || ''
 
   const supabase = await createClient()
-  const { data: results, error } = await supabase.from('product').select('*')
 
-  const filteredResults = results
-    ? results.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
-    : []
+  let filteredResults: any[] = []
+  let error: any = null
+
+  if (query) {
+    const { data, error: dbError } = await supabase
+      .from('product')
+      .select('*')
+      .ilike('name', `%${query}%`)
+
+    error = dbError
+    filteredResults = data ?? []
+  }
 
   if (error) {
     console.error('Error loading products:', error)
   }
 
+  // fetch categories and stores for filter controls
+  const { data: categories } = await supabase.from('category').select('*')
+  const { data: stores } = await supabase.from('store').select('*')
+
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-14 items-center">
+    <main className="min-h-screen flex flex-col items-center bg-background">
+      <div className="w-full">
         <Navbar right={<AuthButton />} />
 
-        <PillsNav active="Otsing" />
-
-        <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
-          <section className="w-full">
-            <div className="flex items-center gap-4 mb-8">
-              <Link href="/" className="text-blue-500 hover:underline">
-                ← Tagasi
-              </Link>
+        <div className="w-full max-w-5xl mx-auto p-6">
+          <header className="mt-6 mb-8">
+            <div className="flex items-center gap-4">
               <h1 className="text-3xl font-bold">Otsingu tulemused</h1>
+              {query && (
+                <span className="ml-2 px-3 py-1 rounded-full bg-muted/40 text-sm text-muted-foreground">
+                  {filteredResults.length} tulemus{filteredResults.length === 1 ? '' : 'ed'}
+                </span>
+              )}
             </div>
+          </header>
 
-            {query && (
-              <p className="text-lg text-muted-foreground mb-6">
-                Otsisõna: <span className="font-semibold text-foreground">"{query}"</span>
-              </p>
-            )}
-
-            {filteredResults.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredResults.map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-lg text-muted-foreground">
-                  {query ? `Tooteid otsisõnaga "${query}" ei leitud` : 'Palun sisesta otsingusõna'}
-                </p>
-              </div>
-            )}
+          <section className="w-full">
+            <SearchResultsClient
+              initialProducts={filteredResults}
+              categories={categories || []}
+              stores={stores || []}
+              initialQuery={query}
+            />
           </section>
         </div>
       </div>
