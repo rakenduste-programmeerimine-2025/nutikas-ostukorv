@@ -3,7 +3,7 @@
 import * as React from 'react'
 import ProductCard, { Product } from './product-card'
 import FilterBar from './ui/filter-bar'
-import ProductSearch from './product-search'
+import ProductInfoModal from '@/components/ui/product-info-modal'
 
 export default function BrowseProducts() {
   const [page, setPage] = React.useState(1)
@@ -15,15 +15,18 @@ export default function BrowseProducts() {
   const [selectedStore, setSelectedStore] = React.useState<string | null>(null)
   const [minPrice, setMinPrice] = React.useState('')
   const [maxPrice, setMaxPrice] = React.useState('')
-  const [selectedSort, setSelectedSort] = React.useState<string | null>(null)
+  const [selectedSort, setSelectedSort] = React.useState<string | null>('price_asc')
   const [searchQuery, setSearchQuery] = React.useState('')
   const [total, setTotal] = React.useState(0)
   const [loading, setLoading] = React.useState(false)
+  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null)
+
   const totalPages = Math.max(1, Math.ceil(total / Math.max(limit, 1)))
 
   React.useEffect(() => {
     let canceled = false
     setLoading(true)
+
     const params = new URLSearchParams({ page: String(page), limit: String(limit) })
     if (selectedCategory) params.set('category', selectedCategory)
     if (selectedStore) params.set('store', selectedStore)
@@ -53,24 +56,12 @@ export default function BrowseProducts() {
     }
   }, [page, limit, selectedCategory, selectedStore, minPrice, maxPrice, selectedSort, searchQuery])
 
-  function goto(p: number) {
-    setPage(Math.min(Math.max(1, p), totalPages))
-  }
-
   const categoriesMap = Object.fromEntries((categories ?? []).map((c: any) => [String(c.id), c]))
   const storesMap = Object.fromEntries((stores ?? []).map((s: any) => [String(s.id), s]))
 
   return (
     <div className="w-full">
       <div className="flex flex-col gap-4 mb-6">
-        <ProductSearch
-          value={searchQuery}
-          onSearchChange={v => {
-            setSearchQuery(v)
-            setPage(1)
-          }}
-        />
-
         <div className="flex items-center justify-between">
           <FilterBar
             categories={categories}
@@ -115,10 +106,6 @@ export default function BrowseProducts() {
               setPage(1)
             }}
           />
-
-          <div className="text-sm text-muted-foreground">
-            Kuvatud {(products ?? []).length} of {total}
-          </div>
         </div>
       </div>
 
@@ -128,50 +115,24 @@ export default function BrowseProducts() {
               <div key={i} className="h-40 bg-muted-foreground/20 rounded" />
             ))
           : products.map(p => (
-              <ProductCard
+              <div
                 key={p.id}
-                product={p}
-                categoryName={categoriesMap[String((p as any).category_id)]?.name}
-                storeName={storesMap[String((p as any).store_id)]?.name}
-              />
+                onClick={() => setSelectedProduct(p)}
+                className="cursor-pointer min-h-[320px] flex"
+              >
+                <ProductCard
+                  product={p}
+                  categoryName={categoriesMap[String((p as any).category_id)]?.name}
+                  storeName={storesMap[String((p as any).store_id)]?.name}
+                />
+              </div>
             ))}
       </div>
 
-      <div className="flex items-center justify-center gap-3 mt-6">
-        <button
-          onClick={() => goto(page - 1)}
-          disabled={page <= 1}
-          className="px-3 py-1 border rounded disabled:opacity-50"
-        >
-          Eelmine
-        </button>
-
-        <div className="flex items-center gap-2">
-          {Array.from({ length: Math.min(7, totalPages) }).map((_, i) => {
-            // show a sliding window around current page
-            const start = Math.max(1, Math.min(page - 3, totalPages - 6))
-            const p = start + i
-            if (p > totalPages) return null
-            return (
-              <button
-                key={p}
-                onClick={() => goto(p)}
-                className={`px-3 py-1 rounded border ${p === page ? 'bg-foreground text-background' : ''}`}
-              >
-                {p}
-              </button>
-            )
-          })}
-        </div>
-
-        <button
-          onClick={() => goto(page + 1)}
-          disabled={page >= totalPages}
-          className="px-3 py-1 border rounded disabled:opacity-50"
-        >
-          Järgmine
-        </button>
-      </div>
+      <ProductInfoModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </div>
   )
 }

@@ -16,7 +16,7 @@ export interface CartItem {
 
 type CartContextType = {
   items: CartItem[]
-  addItem: (p: CartProduct) => void
+  addItem: (p: CartProduct, quantity?: number) => void
   removeItem: (id: number) => void
   updateQty: (id: number, qty: number) => void
   clear: () => void
@@ -38,9 +38,7 @@ function useLocalStorage<T>(key: string, initial: T) {
   React.useEffect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(state))
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [key, state])
 
   return [state, setState] as const
@@ -50,15 +48,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useLocalStorage<CartItem[]>('cart.items', [])
 
   const addItem = React.useCallback(
-    (product: CartProduct) => {
+    (product: CartProduct, quantity: number = 1) => {
       setItems(prev => {
         const idx = prev.findIndex(i => i.product.id === product.id)
         if (idx >= 0) {
           const copy = [...prev]
-          copy[idx] = { ...copy[idx], quantity: copy[idx].quantity + 1 }
+          copy[idx] = { ...copy[idx], quantity: copy[idx].quantity + quantity }
           return copy
         }
-        return [...prev, { product, quantity: 1 }]
+        return [...prev, { product, quantity }]
       })
     },
     [setItems]

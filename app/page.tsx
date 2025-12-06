@@ -3,30 +3,37 @@ import PillsNav from '@/components/ui/pills-nav'
 import ProductModalWrapper from '@/components/product-modal-wrapper'
 import Link from 'next/link'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
-import GlobalProductSearch from '@/components/ui/global-product-search'
 import { createClient } from '@/lib/supabase/server'
 import { AuthButton } from '@/components/auth-button'
+import HomeClientWrapper from '@/components/home-client-wrapper'
 
 export default async function Home() {
   const supabase = await createClient()
-  const { data: allProducts, error } = await supabase.from('product').select('*')
-
-  if (error) {
-    console.error('Error loading products:', error)
-  }
+  const { data: allProducts } = await supabase.from('product').select('*')
 
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-14 items-center">
-        <Navbar right={<AuthButton />} />
+    <main className="min-h-screen flex flex-col items-center bg-background">
+      <div className="w-full">
+        <Navbar
+          right={<AuthButton />}
+          globalSearch={<HomeClientWrapper allProducts={allProducts || []} />}
+        />
 
-        <PillsNav active="Otsing" />
+        <header className="w-full bg-gradient-to-r from-neutral-200 to-white dark:from-neutral-900 dark:to-neutral-800 bg-[length:200%_200%] animate-[gradientShift_12s_ease_infinite] py-12 border-b border-border">
+          <div className="max-w-5xl mx-auto px-6 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-5">Leia parimad tooted kiirelt</h1>
+            <p className="text-muted-foreground max-w-4xl mx-auto">
+              Otsi, võrdle ja lisa tooted ostukorvi. Kasuta otsingut üleval või sirvi kategooriaid
+              allpool.
+            </p>
+          </div>
+        </header>
 
-        <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
-          <GlobalProductSearch allProducts={allProducts || []} />
+        <div className="w-full max-w-5xl p-6 mx-auto flex flex-col items-center gap-12">
+          <PillsNav active="Otsing" />
 
-          <section className="w-full mt-16">
-            <h3 className="text-center text-2xl mb-8">Kategooriad</h3>
+          <section className="w-full">
+            <h3 className="text-center text-2xl mb-6 font-semibold">Kategooriad</h3>
 
             <div className="w-full overflow-x-auto">
               <div className="flex gap-6 px-1 pb-3">
@@ -105,8 +112,8 @@ export default async function Home() {
                   },
                 ].map((cat, i) => (
                   <Link key={i} href={`/category/${cat.slug}`}>
-                    <Card className="min-w-[200px] cursor-pointer hover:shadow-lg transition">
-                      <div className="h-32 bg-muted-foreground/40 rounded-t-xl overflow-hidden">
+                    <Card className="min-w-[200px] cursor-pointer hover:shadow-xl transition transform hover:-translate-y-1">
+                      <div className="h-40 bg-muted-foreground/20 rounded-t-xl overflow-hidden flex items-center justify-center">
                         <img
                           src={cat.image}
                           alt={cat.name}
@@ -114,9 +121,8 @@ export default async function Home() {
                         />
                       </div>
 
-                      <CardContent>
-                        <CardTitle>{cat.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground mt-2">Kategooria kirjeldus</p>
+                      <CardContent className="flex flex-col items-center justify-center py-4">
+                        <CardTitle className="text-center">{cat.name}</CardTitle>
                       </CardContent>
                     </Card>
                   </Link>
@@ -125,9 +131,11 @@ export default async function Home() {
             </div>
           </section>
 
-          <section className="w-full">
-            <h3 className="text-center text-2xl mb-8">Populaarsed tooted</h3>
-            <ProductModalWrapper />
+          <section className="w-full mt-2">
+            <h3 className="text-center text-2xl mb-6 font-semibold">Populaarsed tooted</h3>
+            <div className="w-full">
+              <ProductModalWrapper />
+            </div>
           </section>
         </div>
       </div>
