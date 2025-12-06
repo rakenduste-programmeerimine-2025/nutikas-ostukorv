@@ -8,6 +8,7 @@ import { useCart } from '@/components/cart/cart-context'
 interface ProductInfoModalProps {
   product: Product | null
   categoryName?: string
+  storeName?: string
   onClose: () => void
   onAddToCart?: (product: Product, quantity: number) => void
 }
@@ -15,6 +16,7 @@ interface ProductInfoModalProps {
 export default function ProductInfoModal({
   product,
   categoryName,
+  storeName,
   onClose,
   onAddToCart,
 }: ProductInfoModalProps) {
@@ -72,6 +74,8 @@ export default function ProductInfoModal({
         {categoryName && (
           <p className="text-sm text-muted-foreground mb-1">Kategooria: {categoryName}</p>
         )}
+
+        {storeName && <p className="text-sm text-muted-foreground mb-1">Pood: {storeName}</p>}
 
         <p className="text-lg font-medium mb-4">{product.price} €</p>
 
