@@ -2,9 +2,9 @@ import Navbar from '@/components/ui/navbar'
 import { AuthButton } from '@/components/auth-button'
 import PillsNav from '@/components/ui/pills-nav'
 import { createClient } from '@/lib/supabase/server'
-import ProductCard, { type Product } from '@/components/product-card'
+import { type Product } from '@/components/product-card'
+import StoreProductsBrowser from '@/components/ui/store-product-browser'
 
-// Shape of the `product` table rows from Supabase
 interface ProductRow {
   id: number
   name: string
@@ -78,15 +78,16 @@ export default async function StorePage({ params }: StorePageProps) {
           <section className="w-full">
             <h2 className="text-2xl mb-4">Kõik tooted selles poes</h2>
 
-            {(!products || products.length === 0) && (
-              <p className="text-muted-foreground text-sm">Selles poes ei ole veel tooteid.</p>
+            {storeProducts.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                Selles poes ei ole veel tooteid.
+              </p>
+            ) : (
+              <StoreProductsBrowser
+                products={storeProducts}
+                storeName={store.name}
+              />
             )}
-
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {storeProducts.map(product => (
-                <ProductCard key={product.id} product={product} storeName={store.name} />
-              ))}
-            </div>
           </section>
         </section>
       </div>
