@@ -5,7 +5,11 @@ import { createClient } from '@/lib/supabase/client'
 import ProductCard, { Product } from '@/components/product-card'
 import ProductInfoModal from '@/components/ui/product-info-modal'
 
-export default function ProductModalWrapper() {
+export default function ProductModalWrapper({
+  extraSantaProducts = [],
+}: {
+  extraSantaProducts?: Product[]
+}) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [categoriesMap, setCategoriesMap] = useState<Record<string, string>>({})
@@ -16,24 +20,37 @@ export default function ProductModalWrapper() {
     const fetchProducts = async () => {
       setLoading(true)
       const supabase = createClient()
-      const { data, error } = await supabase.from('product').select('*').in('id', [133, 214, 15])
+      const { data, error } = await supabase
+        .from('product')
+        .select('*')
+        .in('id', [133, 214, 15])
 
       if (!error && data) {
-        setProducts(data)
+        // Keep the original three featured products as-is
+        setProducts(data as Product[])
 
-        // fetch categories and stores referenced by these products
-        const categoryIds = Array.from(new Set(data.map((p: any) => p.category_id).filter(Boolean)))
-        const storeIds = Array.from(new Set(data.map((p: any) => p.store_id).filter(Boolean)))
+        // Fetch categories and stores referenced by both featured and extra products
+        const merged = [...data, ...extraSantaProducts] as any[]
+        const categoryIds = Array.from(
+          new Set(merged.map(p => p.category_id).filter(Boolean))
+        )
+        const storeIds = Array.from(new Set(merged.map(p => p.store_id).filter(Boolean)))
 
         if (categoryIds.length > 0) {
-          const { data: cats } = await supabase.from('category').select('*').in('id', categoryIds)
+          const { data: cats } = await supabase
+            .from('category')
+            .select('*')
+            .in('id', categoryIds)
           const cmap: Record<string, string> = {}
           ;(cats || []).forEach((c: any) => (cmap[String(c.id)] = c.name))
           setCategoriesMap(cmap)
         }
 
         if (storeIds.length > 0) {
-          const { data: stores } = await supabase.from('store').select('*').in('id', storeIds)
+          const { data: stores } = await supabase
+            .from('store')
+            .select('*')
+            .in('id', storeIds)
           const smap: Record<string, string> = {}
           ;(stores || []).forEach((s: any) => (smap[String(s.id)] = s.name))
           setStoresMap(smap)
@@ -42,17 +59,24 @@ export default function ProductModalWrapper() {
       setLoading(false)
     }
     fetchProducts()
-  }, [])
+  }, [extraSantaProducts])
+
+  const displayProducts: Product[] = [
+    ...products,
+    ...extraSantaProducts.filter(
+      p => !products.some(existing => existing.id === p.id)
+    ),
+  ]
 
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {loading ? (
           <div className="col-span-3 text-center">Laadimine...</div>
-        ) : products.length === 0 ? (
+        ) : displayProducts.length === 0 ? (
           <div className="col-span-3 text-center">Tooteid ei leitud.</div>
         ) : (
-          products.map(product => (
+          displayProducts.map(product => (
             <div
               key={product.id}
               onClick={() => setSelectedProduct(product)}

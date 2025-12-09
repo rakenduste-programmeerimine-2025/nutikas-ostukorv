@@ -66,7 +66,100 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: candidatesError.message }, { status: 500 })
     }
 
-    const candidateRows = (candidates ?? []) as any[]
+    const candidateRowsRaw = (candidates ?? []) as any[]
+
+    if (candidateRowsRaw.length === 0) {
+      return NextResponse.json({ baseProduct: base, comparisons: [] })
+    }
+
+    // Basic helpers for textual and price similarity so we don't compare
+    // completely unrelated items (e.g. saffron vs table salt).
+    const baseName = String((base as any).name ?? '').toLowerCase()
+
+    const STOP_WORDS = new Set([
+      'santa',
+      'maria',
+      'rimi',
+      'selver',
+      'coop',
+      'smart',
+      'klassikaline',
+      'maitseaine',
+      'maitseained',
+      'segu',
+      'mix',
+      'pulber',
+      'jahvatatud',
+      'hakitud',
+      'premium',
+      'classic',
+    ])
+
+    function tokens(name: string): string[] {
+      return name
+        .toLowerCase()
+        .replace(/[^a-zäöõü0-9]+/g, ' ')
+        .split(' ')
+        .map(t => t.trim())
+        .filter(t => t && !STOP_WORDS.has(t))
+    }
+
+    const baseTokens = new Set(tokens(baseName))
+
+    const baseQtyVal = (base as any).quantity_value as number | null
+    const baseQtyUnit = (base as any).quantity_unit as string | null
+    const basePrice = (base as any).price as number | null
+    const basePricePerUnitExplicit = (base as any).price_per_unit as number | null
+
+    const basePricePerUnit = (() => {
+      if (typeof basePricePerUnitExplicit === 'number') return basePricePerUnitExplicit
+      if (basePrice != null && baseQtyVal != null && baseQtyVal > 0) {
+        return basePrice / baseQtyVal
+      }
+      return null
+    })()
+
+    function isReasonableCandidate(other: any): boolean {
+      // If global_product_id matches, always allow.
+      if (baseGlobalId != null && other.global_product_id === baseGlobalId) {
+        return true
+      }
+
+      const name = String(other.name ?? '').toLowerCase()
+      const otherTokens = new Set(tokens(name))
+      let overlap = 0
+      baseTokens.forEach(t => {
+        if (otherTokens.has(t)) overlap++
+      })
+
+      // Require at least one meaningful shared token when falling back to
+      // heuristic matching.
+      if (overlap === 0) return false
+
+      // If we have price-per-unit info for both, reject candidates that are
+      // orders of magnitude cheaper / more expensive.
+      const otherQtyVal = other.quantity_value as number | null
+      const otherPrice = other.price as number | null
+      const otherPPUExplicit = other.price_per_unit as number | null
+
+      const otherPPU = (() => {
+        if (typeof otherPPUExplicit === 'number') return otherPPUExplicit
+        if (otherPrice != null && otherQtyVal != null && otherQtyVal > 0) {
+          return otherPrice / otherQtyVal
+        }
+        return null
+      })()
+
+      if (basePricePerUnit != null && otherPPU != null && basePricePerUnit > 0) {
+        const ratio = otherPPU / basePricePerUnit
+        // Keep only items roughly in the same order of magnitude.
+        if (ratio < 0.2 || ratio > 5) return false
+      }
+
+      return true
+    }
+
+    const candidateRows = candidateRowsRaw.filter(isReasonableCandidate)
 
     if (candidateRows.length === 0) {
       return NextResponse.json({ baseProduct: base, comparisons: [] })
@@ -142,6 +235,8 @@ export async function GET(req: Request) {
         if (aMetric !== bMetric) return aMetric - bMetric
         return b.similarity - a.similarity
       })
+      // Do not overwhelm the UI: only return the most relevant matches
+      .slice(0, 15)
 
     return NextResponse.json({ baseProduct: base, comparisons })
   } catch (err: any) {

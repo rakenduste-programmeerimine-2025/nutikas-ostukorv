@@ -9,7 +9,91 @@ import HomeClientWrapper from '@/components/home-client-wrapper'
 
 export default async function Home() {
   const supabase = await createClient()
-  const { data: allProducts } = await supabase.from('product').select('*')
+
+  const [{ data: allProducts }, { data: stores }] = await Promise.all([
+    supabase.from('product').select('*'),
+    supabase.from('store').select('*'),
+  ])
+
+  // Derive a few Santa Maria maitseained that appear in all three stores
+  let santaCrossStore: any[] = []
+
+  if (allProducts && stores) {
+    const lowerName = (s: string | null | undefined) =>
+      (s ?? '').toString().toLowerCase()
+
+    const coopStore = stores.find((s: any) => lowerName(s.name).includes('coop'))
+    const rimiStore = stores.find((s: any) => lowerName(s.name).includes('rimi'))
+    const selverStore = stores.find((s: any) => lowerName(s.name).includes('selver'))
+
+    if (coopStore && rimiStore && selverStore) {
+      const wantedStoreIds = new Set<number>([
+        Number(coopStore.id),
+        Number(rimiStore.id),
+        Number(selverStore.id),
+      ])
+
+      const santaSpices = (allProducts as any[]).filter(p => {
+        const name = lowerName(p.name)
+        const isSanta = name.includes('santa maria')
+        const isSaltOrPepper =
+          name.includes('pipar') ||
+          name.includes('pepper') ||
+          name.includes('sool') ||
+          name.includes('salt')
+        return isSanta && isSaltOrPepper
+      })
+
+      const groups = new Map<string, any[]>()
+
+      for (const p of santaSpices) {
+        let key: string
+        if (p.global_product_id != null) {
+          key = `g:${p.global_product_id}`
+        } else {
+          const normName = lowerName(p.name)
+            .replace('santa maria', '')
+            .replace(/[^a-z0-9]+/g, ' ')
+            .trim()
+          key = `n:${normName}`
+        }
+
+        const list = groups.get(key) ?? []
+        list.push(p)
+        groups.set(key, list)
+      }
+
+      const metric = (p: any) => {
+        if (p.price_per_unit != null) return Number(p.price_per_unit)
+        if (p.price != null) return Number(p.price)
+        return Number.POSITIVE_INFINITY
+      }
+
+      const picks: any[] = []
+
+      for (const list of groups.values()) {
+        const storeSet = new Set<number>(list.map(p => Number(p.store_id)))
+        let hasAll = true
+        for (const id of wantedStoreIds) {
+          if (!storeSet.has(id)) {
+            hasAll = false
+            break
+          }
+        }
+        if (!hasAll) continue
+
+        let best = list[0]
+        for (const p of list) {
+          if (metric(p) < metric(best)) {
+            best = p
+          }
+        }
+        picks.push(best)
+      }
+
+      santaCrossStore = picks.slice(0, 3)
+    }
+  }
 
   return (
     <main className="min-h-screen flex flex-col items-center bg-background">
@@ -143,7 +227,7 @@ export default async function Home() {
           <section className="w-full mt-2">
             <h3 className="text-center text-2xl mb-6 font-semibold">Populaarsed tooted</h3>
             <div className="w-full">
-              <ProductModalWrapper />
+              <ProductModalWrapper extraSantaProducts={santaCrossStore as any} />
             </div>
           </section>
         </div>
