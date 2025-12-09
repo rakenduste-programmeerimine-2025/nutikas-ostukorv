@@ -1,6 +1,18 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+interface ProductRow {
+  id: number
+  name: string | null
+  price: number | null
+  price_per_unit: number | null
+  store_id: number | null
+  category_id: number | null
+  global_product_id: number | null
+  quantity_unit: string | null
+  quantity_value: number | null
+}
+
 // Simple helper to safely coerce to number or null
 function toNumber(value: string | null): number | null {
   if (value == null) return null
@@ -25,17 +37,17 @@ export async function GET(req: Request) {
       .from('product')
       .select('*')
       .eq('id', productId)
-      .single()
+      .single<ProductRow>()
 
     if (baseError || !base) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    const baseStoreId = (base as any).store_id as number | null
-    const baseCategoryId = (base as any).category_id as number | null
-    const baseGlobalId = (base as any).global_product_id as number | null
-    const baseQuantityUnit = (base as any).quantity_unit as string | null
-    const baseQuantityValue = (base as any).quantity_value as number | null
+    const baseStoreId = base.store_id
+    const baseCategoryId = base.category_id
+    const baseGlobalId = base.global_product_id
+    const baseQuantityUnit = base.quantity_unit
+    const baseQuantityValue = base.quantity_value
 
     // 2) Build candidate query
     let candidatesQuery = supabase
@@ -66,7 +78,158 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: candidatesError.message }, { status: 500 })
     }
 
-    const candidateRows = (candidates ?? []) as any[]
+    const candidateRowsRaw: ProductRow[] = (candidates ?? []) as ProductRow[]
+
+    if (candidateRowsRaw.length === 0) {
+      return NextResponse.json({ baseProduct: base, comparisons: [] })
+    }
+
+    // Basic helpers for textual and price similarity so we don't compare
+    // completely unrelated items (e.g. saffron vs table salt).
+    const baseName = String(base.name ?? '').toLowerCase()
+
+    const STOP_WORDS = new Set([
+      // brands / stores
+      'santa',
+      'maria',
+      'rimi',
+      'selver',
+      'coop',
+      'smart',
+      'anatols',
+      'dr',
+      'oetker',
+      'meira',
+      'kotanyi',
+      'ica',
+      'kati',
+      'nordic',
+      'veski',
+      'mati',
+      'dan',
+      'sukker',
+      'diamant',
+      'first',
+      'price',
+      // generic descriptors
+      'klassikaline',
+      'maitseaine',
+      'maitseained',
+      'maitseainesegu',
+      'segu',
+      'mix',
+      'pulber',
+      'jahvatatud',
+      'purustatud',
+      'hakitud',
+      'viilutatud',
+      'laastud',
+      'premium',
+      'classic',
+    ])
+
+    function normalizeBaseName(name: string): string {
+      return name
+        .toLowerCase()
+        // remove common brand phrases
+        .replace(/santa\s+maria/g, ' ')
+        .replace(/rimi\s+smart/g, ' ')
+        .replace(/first\s+price/g, ' ')
+        .replace(/veski\s+mati/g, ' ')
+        .replace(/dan\s+sukker/g, ' ')
+        // drop obvious quantity markers with units ("30 g", "0,5g", etc.)
+        .replace(/\d+[.,]?\d*\s*(kg|g|l|ml|tk)\b/g, ' ')
+        // drop standalone numbers
+        .replace(/\b\d+[.,]?\d*\b/g, ' ')
+        .replace(/[,;:%()]/g, ' ')
+    }
+
+    function tokens(name: string): string[] {
+      return normalizeBaseName(name)
+        .replace(/[^a-zäöõü0-9]+/g, ' ')
+        .split(' ')
+        .map(t => t.trim())
+        .filter(t => t && !STOP_WORDS.has(t))
+    }
+
+    function extractCoreKey(name: string): string | null {
+      const toks = tokens(name)
+      if (toks.length === 0) return null
+
+      // Try to pick the most "item-like" token first (things ending with
+      // maitseaine / pipar / sool / suhkur / paprika etc.).
+      const primary = toks.find(t =>
+        /(maitseaine|pipar|sool|suhkur|paprika|rosmariin|kurkum|karri|safran|till|kaneel)/.test(
+          t
+        )
+      )
+
+      const key = (primary ?? toks.join(' ')).trim()
+      return key || null
+    }
+
+    const baseTokens = new Set(tokens(baseName))
+    const baseCoreKey = extractCoreKey(baseName)
+
+    const baseQtyVal = base.quantity_value
+    const basePrice = base.price
+    const basePricePerUnitExplicit = base.price_per_unit
+
+    const basePricePerUnit = (() => {
+      if (typeof basePricePerUnitExplicit === 'number') return basePricePerUnitExplicit
+      if (basePrice != null && baseQtyVal != null && baseQtyVal > 0) {
+        return basePrice / baseQtyVal
+      }
+      return null
+    })()
+
+    function isReasonableCandidate(other: ProductRow): boolean {
+      // If global_product_id matches, always allow.
+      if (baseGlobalId != null && other.global_product_id === baseGlobalId) {
+        return true
+      }
+
+      const name = String(other.name ?? '').toLowerCase()
+      const otherCoreKey = extractCoreKey(name)
+      if (baseCoreKey && otherCoreKey) {
+        // strict match on core key when both available
+        if (baseCoreKey !== otherCoreKey) return false
+      } else {
+        const otherTokens = new Set(tokens(name))
+        let overlap = 0
+        baseTokens.forEach(t => {
+          if (otherTokens.has(t)) overlap++
+        })
+
+        // Require at least one meaningful shared token when falling back to
+        // heuristic matching.
+        if (overlap === 0) return false
+      }
+
+      // If we have price-per-unit info for both, reject candidates that are
+      // orders of magnitude cheaper / more expensive.
+      const otherQtyVal = other.quantity_value as number | null
+      const otherPrice = other.price as number | null
+      const otherPPUExplicit = other.price_per_unit as number | null
+
+      const otherPPU = (() => {
+        if (typeof otherPPUExplicit === 'number') return otherPPUExplicit
+        if (otherPrice != null && otherQtyVal != null && otherQtyVal > 0) {
+          return otherPrice / otherQtyVal
+        }
+        return null
+      })()
+
+      if (basePricePerUnit != null && otherPPU != null && basePricePerUnit > 0) {
+        const ratio = otherPPU / basePricePerUnit
+        // Keep only items roughly in the same order of magnitude.
+        if (ratio < 0.2 || ratio > 5) return false
+      }
+
+      return true
+    }
+
+    const candidateRows = candidateRowsRaw.filter(isReasonableCandidate)
 
     if (candidateRows.length === 0) {
       return NextResponse.json({ baseProduct: base, comparisons: [] })
@@ -90,10 +253,12 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: storesError.message }, { status: 500 })
     }
 
-    const storeMap = Object.fromEntries((stores ?? []).map((s: any) => [String(s.id), s]))
+    const storeMap: Record<string, unknown> = Object.fromEntries(
+      (stores ?? []).map((s: { id: number }) => [String(s.id), s])
+    )
 
     // 4) Compute a simple similarity score and sort
-    function similarityScore(other: any): number {
+    function similarityScore(other: ProductRow): number {
       let score = 0
 
       if (baseGlobalId != null && other.global_product_id === baseGlobalId) {
@@ -123,8 +288,8 @@ export async function GET(req: Request) {
 
     const comparisons = candidateRows
       .map(row => {
-        const pricePerUnit = (row.price_per_unit as number | null) ?? null
-        const price = (row.price as number | null) ?? null
+        const pricePerUnit = row.price_per_unit ?? null
+        const price = row.price ?? null
 
         return {
           product: row,
@@ -142,9 +307,12 @@ export async function GET(req: Request) {
         if (aMetric !== bMetric) return aMetric - bMetric
         return b.similarity - a.similarity
       })
+      // Do not overwhelm the UI: only return the most relevant matches
+      .slice(0, 15)
 
     return NextResponse.json({ baseProduct: base, comparisons })
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message ?? String(err) }, { status: 500 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
