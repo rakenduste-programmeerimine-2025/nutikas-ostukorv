@@ -26,7 +26,6 @@ export default function CategoryProductBrowser({
   const [limit, setLimit] = useState(30)
   const [sort, setSort] = useState<string | null>('price_asc')
   const [selectedProduct, setSelectedProduct] = useState<CardProduct | null>(null)
-  const [selectedProduct, setSelectedProduct] = useState(null)
   const [page, setPage] = useState(1)
 
   const filteredAll = products
@@ -134,10 +133,7 @@ export default function CategoryProductBrowser({
         </div>
       )}
 
-      <ProductInfoModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-      />
+      <ProductInfoModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
     </div>
   )
 }
