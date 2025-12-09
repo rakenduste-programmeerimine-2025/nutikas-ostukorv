@@ -1,6 +1,18 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+interface ProductRow {
+  id: number
+  name: string | null
+  price: number | null
+  price_per_unit: number | null
+  store_id: number | null
+  category_id: number | null
+  global_product_id: number | null
+  quantity_unit: string | null
+  quantity_value: number | null
+}
+
 // Simple helper to safely coerce to number or null
 function toNumber(value: string | null): number | null {
   if (value == null) return null
@@ -25,17 +37,17 @@ export async function GET(req: Request) {
       .from('product')
       .select('*')
       .eq('id', productId)
-      .single()
+      .single<ProductRow>()
 
     if (baseError || !base) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    const baseStoreId = (base as any).store_id as number | null
-    const baseCategoryId = (base as any).category_id as number | null
-    const baseGlobalId = (base as any).global_product_id as number | null
-    const baseQuantityUnit = (base as any).quantity_unit as string | null
-    const baseQuantityValue = (base as any).quantity_value as number | null
+    const baseStoreId = base.store_id
+    const baseCategoryId = base.category_id
+    const baseGlobalId = base.global_product_id
+    const baseQuantityUnit = base.quantity_unit
+    const baseQuantityValue = base.quantity_value
 
     // 2) Build candidate query
     let candidatesQuery = supabase
@@ -66,7 +78,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: candidatesError.message }, { status: 500 })
     }
 
-    const candidateRowsRaw = (candidates ?? []) as any[]
+    const candidateRowsRaw: ProductRow[] = (candidates ?? []) as ProductRow[]
 
     if (candidateRowsRaw.length === 0) {
       return NextResponse.json({ baseProduct: base, comparisons: [] })
@@ -74,7 +86,7 @@ export async function GET(req: Request) {
 
     // Basic helpers for textual and price similarity so we don't compare
     // completely unrelated items (e.g. saffron vs table salt).
-    const baseName = String((base as any).name ?? '').toLowerCase()
+    const baseName = String(base.name ?? '').toLowerCase()
 
     const STOP_WORDS = new Set([
       // brands / stores
@@ -159,10 +171,9 @@ export async function GET(req: Request) {
     const baseTokens = new Set(tokens(baseName))
     const baseCoreKey = extractCoreKey(baseName)
 
-    const baseQtyVal = (base as any).quantity_value as number | null
-    const baseQtyUnit = (base as any).quantity_unit as string | null
-    const basePrice = (base as any).price as number | null
-    const basePricePerUnitExplicit = (base as any).price_per_unit as number | null
+    const baseQtyVal = base.quantity_value
+    const basePrice = base.price
+    const basePricePerUnitExplicit = base.price_per_unit
 
     const basePricePerUnit = (() => {
       if (typeof basePricePerUnitExplicit === 'number') return basePricePerUnitExplicit
@@ -172,25 +183,26 @@ export async function GET(req: Request) {
       return null
     })()
 
-    function isReasonableCandidate(other: any): boolean {
+    function isReasonableCandidate(other: ProductRow): boolean {
       // If global_product_id matches, always allow.
       if (baseGlobalId != null && other.global_product_id === baseGlobalId) {
         return true
       }
 
       const name = String(other.name ?? '').toLowerCase()
-
-      // 1) Prefer strict core-name equality when we can extract it for both
       const otherCoreKey = extractCoreKey(name)
       if (baseCoreKey && otherCoreKey) {
+        // strict match on core key when both available
         if (baseCoreKey !== otherCoreKey) return false
       } else {
-        // 2) Fallback: require at least one meaningful shared token
         const otherTokens = new Set(tokens(name))
         let overlap = 0
         baseTokens.forEach(t => {
           if (otherTokens.has(t)) overlap++
         })
+
+        // Require at least one meaningful shared token when falling back to
+        // heuristic matching.
         if (overlap === 0) return false
       }
 
@@ -241,10 +253,12 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: storesError.message }, { status: 500 })
     }
 
-    const storeMap = Object.fromEntries((stores ?? []).map((s: any) => [String(s.id), s]))
+    const storeMap: Record<string, unknown> = Object.fromEntries(
+      (stores ?? []).map((s: { id: number }) => [String(s.id), s])
+    )
 
     // 4) Compute a simple similarity score and sort
-    function similarityScore(other: any): number {
+    function similarityScore(other: ProductRow): number {
       let score = 0
 
       if (baseGlobalId != null && other.global_product_id === baseGlobalId) {
@@ -274,8 +288,8 @@ export async function GET(req: Request) {
 
     const comparisons = candidateRows
       .map(row => {
-        const pricePerUnit = (row.price_per_unit as number | null) ?? null
-        const price = (row.price as number | null) ?? null
+        const pricePerUnit = row.price_per_unit ?? null
+        const price = row.price ?? null
 
         return {
           product: row,
@@ -297,7 +311,8 @@ export async function GET(req: Request) {
       .slice(0, 15)
 
     return NextResponse.json({ baseProduct: base, comparisons })
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message ?? String(err) }, { status: 500 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
