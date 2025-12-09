@@ -30,13 +30,13 @@ export default async function StoresPage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-14 items-center">
+      <div className="flex-1 w-full flex flex-col gap-6 items-center">
         <Navbar right={<AuthButton />} />
         <PillsNav active="Poenimekiri" />
 
         <h1 className="text-center text-3xl mb-8">Kõik poed</h1>
 
-        <div className="w-full max-w-xl px-6 flex flex-col gap-4">
+        <div className="w-full max-w-xl px-5 flex flex-col gap-4">
           {(stores ?? []).map(store => {
             const name = store.name ?? ''
             const logo = getStoreLogo(name)
@@ -64,7 +64,6 @@ export default async function StoresPage() {
                 <div className="flex items-center gap-5 rounded-2xl border bg-card px-6 py-5 cursor-pointer hover:bg-muted/70 transition-colors">
                   <div className={logoWrapperClasses}>
                     {logo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={logo} alt={name || 'Pood'} className={logoImgClasses} />
                     ) : (
                       <span className="text-lg font-semibold">{name[0] ?? '?'}</span>
@@ -72,7 +71,9 @@ export default async function StoresPage() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-lg font-medium leading-none">{name}</span>
-                    <span className="text-sm text-muted-foreground mt-1">Vaata poe tooteid ja hindu</span>
+                    <span className="text-sm text-muted-foreground mt-1">
+                      Vaata poe tooteid ja hindu
+                    </span>
                   </div>
                 </div>
               </Link>

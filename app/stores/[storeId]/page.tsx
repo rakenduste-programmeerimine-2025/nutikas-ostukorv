@@ -50,9 +50,7 @@ export default async function StorePage({ params }: StorePageProps) {
     console.error('Error loading products for store:', productsError)
   }
 
-  const productRows = (products ?? []) as ProductRow[]
-
-  const storeProducts: Product[] = productRows.map(p => ({
+  const storeProducts: Product[] = (products ?? []).map((p: ProductRow) => ({
     id: p.id,
     name: p.name,
     price: p.price,
@@ -62,34 +60,39 @@ export default async function StorePage({ params }: StorePageProps) {
   }))
 
   return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-14 items-center">
-        <Navbar right={<AuthButton />} />
-        <PillsNav active="Poenimekiri" />
+    <main className="min-h-screen relative">
+      <div
+        className="fixed inset-0 bg-center bg-cover bg-no-repeat"
+        style={{
+          backgroundImage:
+            "url('https://png.pngtree.com/thumb_back/fh260/background/20240612/pngtree-convenience-store-shelves-interior-blur-background-with-empty-supermarket-shopping-cart-image_15748275.jpg')",
+        }}
+      />
 
-        <section className="w-full max-w-5xl p-6 flex flex-col gap-8">
-          <header className="flex flex-col gap-2">
-            <h1 className="text-3xl font-semibold">{store.name}</h1>
-            <p className="text-muted-foreground text-sm">
-              Vali tooted poest {store.name} ja lisa need ostukorvi.
-            </p>
-          </header>
+      <div className="relative min-h-screen flex flex-col items-center bg-background/80 backdrop-blur-sm">
+        <div className="flex-1 w-full flex flex-col gap-6 items-center">
+          <Navbar right={<AuthButton />} />
+          <PillsNav active="Poenimekiri" />
 
-          <section className="w-full">
-            <h2 className="text-2xl mb-4">Kõik tooted selles poes</h2>
-
-            {storeProducts.length === 0 ? (
+          <section className="w-full max-w-5xl p-6 flex flex-col gap-8">
+            <header className="flex flex-col gap-2">
+              <h1 className="text-3xl font-semibold">{store.name}</h1>
               <p className="text-muted-foreground text-sm">
-                Selles poes ei ole veel tooteid.
+                Vali tooted poest {store.name} ja lisa need ostukorvi.
               </p>
-            ) : (
-              <StoreProductsBrowser
-                products={storeProducts}
-                storeName={store.name}
-              />
-            )}
+            </header>
+
+            <section className="w-full">
+              <h2 className="text-2xl mb-4">Kõik tooted selles poes</h2>
+
+              {storeProducts.length === 0 ? (
+                <p className="text-muted-foreground text-sm">Selles poes ei ole veel tooteid.</p>
+              ) : (
+                <StoreProductsBrowser products={storeProducts} storeName={store.name} />
+              )}
+            </section>
           </section>
-        </section>
+        </div>
       </div>
     </main>
   )

@@ -25,7 +25,9 @@ export default async function Page() {
           globalSearch={<HomeClientWrapper allProducts={allProducts || []} />}
         />
 
-        <PillsNav active="Tooted" />
+        <div className="mt-5">
+          <PillsNav active="Tooted" />
+        </div>
 
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
           <BrowseProducts />
