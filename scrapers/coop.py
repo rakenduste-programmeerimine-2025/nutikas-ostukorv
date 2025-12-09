@@ -130,10 +130,36 @@ def scrape_coop(
                 }
             )
 
-        # Look for a "next" page link in WooCommerce pagination
-        next_link = soup.select_one(".woocommerce-pagination a.next") or soup.select_one(
-            "a.next.page-numbers"
-        )
+        # Look for a "next" page link in WooCommerce pagination.
+        # Some themes only render numeric page links (1, 2, 3, …) without an explicit
+        # "next" anchor, so we handle both cases.
+        pagination = soup.select_one(".woocommerce-pagination")
+        next_link = None
+
+        if pagination:
+            # 1) Prefer an explicit "next" link if it exists
+            next_link = pagination.select_one("a.next, a.next.page-numbers")
+
+            # 2) Fallback: current page is a <span class="page-numbers current">N</span>;
+            #    pick the next numeric <a class="page-numbers">M</a> where M > N.
+            if not next_link:
+                current = pagination.select_one("span.page-numbers.current")
+                if current:
+                    try:
+                        cur_num = int(current.text.strip())
+                    except ValueError:
+                        cur_num = None
+
+                    if cur_num is not None:
+                        for a in pagination.select("a.page-numbers"):
+                            try:
+                                num = int(a.text.strip())
+                            except ValueError:
+                                continue
+                            if num > cur_num:
+                                next_link = a
+                                break
+
         if not next_link or not next_link.get("href"):
             break
 

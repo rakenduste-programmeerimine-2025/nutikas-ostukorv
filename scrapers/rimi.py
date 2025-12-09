@@ -84,11 +84,20 @@ async def scrape_rimi(
             await page.goto(current_url, wait_until="domcontentloaded", timeout=60000)
             await page.wait_for_timeout(2000)
 
-            for _ in range(3):
-                await page.mouse.wheel(0, 2000)
-                await asyncio.sleep(0.5)
-
+            # Scroll multiple times to ensure lazy‑loaded cards appear
             cards = page.locator(".card")
+            last_count = 0
+            for _ in range(10):
+                await page.mouse.wheel(0, 2000)
+                await asyncio.sleep(0.4)
+                try:
+                    count_now = await cards.count()
+                except Exception:
+                    break
+                if count_now == last_count and count_now > 0:
+                    break
+                last_count = count_now
+
             await cards.first.wait_for(timeout=60000)
             count = await cards.count()
             print("Found", count, "products")
@@ -152,12 +161,16 @@ async def scrape_rimi(
                     }
                 )
 
-            next_btn = page.locator("a[aria-label='Järgmine']")
+            # Try to find a "next page" control. The exact selector can vary slightly
+            # between Rimi layouts, so we match a few common patterns.
+            next_btn = page.locator(
+                "a[aria-label='Järgmine'], a[aria-label*='Järgmine'], a[rel='next']"
+            )
             if not await next_btn.count():
-                print("No next button → done.")
+                print("No next button 4a9 done.")
                 break
 
-            href = await next_btn.get_attribute("href")
+            href = await next_btn.first.get_attribute("href")
             if not href:
                 break
 

@@ -9,6 +9,7 @@ from .supabase_client import upsert_products
 CATEGORY_ID = 5
 STORE_ID = 1
 URL = "https://www.selver.ee/puu-ja-koogiviljad"
+BASE_URL = "https://www.selver.ee"
 
 
 def parse_price_and_unit(text: str | None) -> tuple[float | None, str | None]:
@@ -76,7 +77,7 @@ async def scrape_selver(
     category_id: int = CATEGORY_ID,
     store_id: int = STORE_ID,
 ) -> List[Dict[str, Any]]:
-    """Scrape Selver products and return a list of product dicts."""
+    """Scrape Selver products across all pages and return a list of product dicts."""
 
     rows: List[Dict[str, Any]] = []
 
@@ -87,99 +88,128 @@ async def scrape_selver(
         )
         page = await browser.new_page()
 
-        print("Opening Selver…")
-        await page.goto(url, timeout=60000, wait_until="networkidle")
+        current_url = url
 
-        for _ in range(20):
-            await page.mouse.wheel(0, 2000)
-            await asyncio.sleep(0.3)
+        while True:
+            print("Opening Selver", current_url)
+            await page.goto(current_url, timeout=60000, wait_until="networkidle")
 
-        cards = page.locator(".ProductCard")
-        images = page.locator("img.product-image__thumb")
+            # Scroll to trigger lazy loading / infinite scroll on the current page
+            for _ in range(20):
+                await page.mouse.wheel(0, 2000)
+                await asyncio.sleep(0.3)
 
-        count_cards = await cards.count()
-        count_imgs = await images.count()
+            cards = page.locator(".ProductCard")
+            images = page.locator("img.product-image__thumb")
 
-        print("Cards:", count_cards, "| Images:", count_imgs)
+            count_cards = await cards.count()
+            count_imgs = await images.count()
 
-        for i in range(count_cards):
-            card = cards.nth(i)
+            print("Cards on page:", count_cards, "| Images:", count_imgs)
 
-            name_el = card.locator(".ProductCard__name")
-            name = await name_el.inner_text() if await name_el.count() else None
-            if name:
-                name = name.strip()
+            if count_cards == 0:
+                # No products at all on this page – stop.
+                break
 
-            # Selver currently exposes prices via ProductPrice__unit-price (e.g. "0,74 €/kg").
-            # There can be multiple unit-price spans (e.g. original + discounted), so
-            # take the first one. Fall back to Price__main if needed.
-            unit_prices = card.locator(".ProductPrice__unit-price")
-            if await unit_prices.count():
-                price_el = unit_prices.first
-            else:
-                price_el = card.locator(".Price__main").first
+            for i in range(count_cards):
+                card = cards.nth(i)
 
-            price_text = await price_el.inner_text() if await price_el.count() else None
-            unit_price, unit_from_price = parse_price_and_unit(price_text)
+                name_el = card.locator(".ProductCard__name")
+                name = await name_el.inner_text() if await name_el.count() else None
+                if name:
+                    name = name.strip()
 
-            # For loose items (e.g. fruit/veg), price on the site is already
-            # a unit price (€/kg, €/l, €/tk). We treat that as price_per_unit
-            # and assume a notional quantity of 1 unit for comparison.
-            quantity_value_name, quantity_unit_name = parse_quantity_from_name(name or "")
-
-            canonical_unit = None
-            if unit_from_price:
-                if unit_from_price in {"tk", "pcs"}:
-                    canonical_unit = "pcs"
-                elif unit_from_price in {"kg", "g"}:
-                    canonical_unit = "kg"
-                elif unit_from_price in {"l", "ml"}:
-                    canonical_unit = "l"
+                # Selver currently exposes prices via ProductPrice__unit-price (e.g. "0,74 d/kg").
+                # There can be multiple unit-price spans (e.g. original + discounted), so
+                # take the first one. Fall back to Price__main if needed.
+                unit_prices = card.locator(".ProductPrice__unit-price")
+                if await unit_prices.count():
+                    price_el = unit_prices.first
                 else:
-                    canonical_unit = unit_from_price.lower()
-            elif quantity_unit_name:
-                canonical_unit = quantity_unit_name
+                    price_el = card.locator(".Price__main").first
 
-            if quantity_value_name is not None:
-                quantity_value = quantity_value_name
-                quantity_unit = canonical_unit or quantity_unit_name
-            elif canonical_unit is not None:
-                quantity_value = 1.0
-                quantity_unit = canonical_unit
-            else:
-                quantity_value = None
-                quantity_unit = None
+                price_text = await price_el.inner_text() if await price_el.count() else None
+                unit_price, unit_from_price = parse_price_and_unit(price_text)
 
-            if unit_price is not None:
-                price_per_unit = unit_price
-                if quantity_value is not None:
-                    price = unit_price * quantity_value
+                # For loose items (e.g. fruit/veg), price on the site is already
+                # a unit price (d/kg, d/l, d/tk). We treat that as price_per_unit
+                # and assume a notional quantity of 1 unit for comparison.
+                quantity_value_name, quantity_unit_name = parse_quantity_from_name(name or "")
+
+                canonical_unit = None
+                if unit_from_price:
+                    if unit_from_price in {"tk", "pcs"}:
+                        canonical_unit = "pcs"
+                    elif unit_from_price in {"kg", "g"}:
+                        canonical_unit = "kg"
+                    elif unit_from_price in {"l", "ml"}:
+                        canonical_unit = "l"
+                    else:
+                        canonical_unit = unit_from_price.lower()
+                elif quantity_unit_name:
+                    canonical_unit = quantity_unit_name
+
+                if quantity_value_name is not None:
+                    quantity_value = quantity_value_name
+                    quantity_unit = canonical_unit or quantity_unit_name
+                elif canonical_unit is not None:
+                    quantity_value = 1.0
+                    quantity_unit = canonical_unit
                 else:
-                    price = unit_price
+                    quantity_value = None
+                    quantity_unit = None
+
+                if unit_price is not None:
+                    price_per_unit = unit_price
+                    if quantity_value is not None:
+                        price = unit_price * quantity_value
+                    else:
+                        price = unit_price
+                else:
+                    price_per_unit = None
+                    price = None
+
+                image_url = None
+                if i < count_imgs:
+                    img = images.nth(i)
+                    src = await img.get_attribute("src")
+                    data_src = await img.get_attribute("data-src")
+                    image_url = data_src or src
+
+                rows.append(
+                    {
+                        "category_id": category_id,
+                        "name": name,
+                        "price": price,
+                        "store_id": store_id,
+                        "image_url": image_url,
+                        "quantity_value": quantity_value,
+                        "quantity_unit": quantity_unit,
+                        "price_per_unit": price_per_unit,
+                        "global_product_id": None,
+                    }
+                )
+
+            # Try to find a "next page" control. Adjust selectors here if Selver changes
+            # its pagination markup.
+            next_btn = page.locator(
+                "a[rel='next'], button[aria-label*='Jdrgmine'], .pagination a.next"
+            ).first
+            if not await next_btn.count():
+                print("No next page 4a9 done.")
+                break
+
+            href = await next_btn.get_attribute("href")
+            if href:
+                if href.startswith("http"):
+                    current_url = href
+                else:
+                    current_url = BASE_URL + href
             else:
-                price_per_unit = None
-                price = None
-
-            image_url = None
-            if i < count_imgs:
-                img = images.nth(i)
-                src = await img.get_attribute("src")
-                data_src = await img.get_attribute("data-src")
-                image_url = data_src or src
-
-            rows.append(
-                {
-                    "category_id": category_id,
-                    "name": name,
-                    "price": price,
-                    "store_id": store_id,
-                    "image_url": image_url,
-                    "quantity_value": quantity_value,
-                    "quantity_unit": quantity_unit,
-                    "price_per_unit": price_per_unit,
-                    "global_product_id": None,
-                }
-            )
+                # Fallback: click the button (if it is a button) and rely on URL change
+                await next_btn.click()
+                await page.wait_for_load_state("networkidle")
+                current_url = page.url
 
         await browser.close()
         return rows

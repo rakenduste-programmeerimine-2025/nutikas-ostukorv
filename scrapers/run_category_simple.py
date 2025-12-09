@@ -33,12 +33,12 @@ CONFIG: Dict[str, Any] = {
             "url": "https://coophaapsalu.ee/tootekategooria/kuivained-kastmed/maitseained/",
         },
         "Rimi": {
-            "enabled": False,
+            "enabled": True,
             "scraper": "rimi",
             "url": "https://www.rimi.ee/epood/ee/tooted/kauasailivad-toidukaubad/maitseained/c/SH-13-12",
         },
         "Selver": {
-            "enabled": False,
+            "enabled": True,
             "scraper": "selver",
             "url": "https://www.selver.ee/maitseained-ja-puljongid/maitseained",
         },
