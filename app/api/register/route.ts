@@ -34,14 +34,14 @@ export async function POST(req: Request) {
       )
     }
 
-    // insert into public.user respecting RLS
-    const userId = authData.user.id
+    // Insert into public.user table.
+    // Our public.user table uses a serial "user_id" primary key (see migrations),
+    // so we don't set an explicit id here – it will be generated automatically.
     const password_hash = await bcrypt.hash(password, 10)
 
     const { error: dbError } = await supabase
       .from('user')
       .insert({
-        id: userId,
         username,
         email,
         password_hash
