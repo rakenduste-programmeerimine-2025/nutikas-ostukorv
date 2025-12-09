@@ -26,19 +26,29 @@ type CartContextType = {
 const CartContext = React.createContext<CartContextType | undefined>(undefined)
 
 function useLocalStorage<T>(key: string, initial: T) {
-  const [state, setState] = React.useState<T>(() => {
-    try {
-      const raw = localStorage.getItem(key)
-      return raw ? (JSON.parse(raw) as T) : initial
-    } catch {
-      return initial
-    }
-  })
+  // During SSR and the first client render we always use the provided
+  // initial value to avoid server/client HTML mismatches. We then hydrate
+  // from localStorage in an effect.
+  const [state, setState] = React.useState<T>(initial)
 
   React.useEffect(() => {
     try {
-      localStorage.setItem(key, JSON.stringify(state))
-    } catch {}
+      if (typeof window === 'undefined') return
+      const raw = window.localStorage.getItem(key)
+      if (!raw) return
+      setState(JSON.parse(raw) as T)
+    } catch {
+      // ignore
+    }
+  }, [key])
+
+  React.useEffect(() => {
+    try {
+      if (typeof window === 'undefined') return
+      window.localStorage.setItem(key, JSON.stringify(state))
+    } catch {
+      // ignore
+    }
   }, [key, state])
 
   return [state, setState] as const
