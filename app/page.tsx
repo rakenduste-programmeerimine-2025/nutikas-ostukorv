@@ -19,12 +19,21 @@ export default async function Home() {
           globalSearch={<HomeClientWrapper allProducts={allProducts || []} />}
         />
 
-        <header className="w-full bg-gradient-to-r from-neutral-200 to-white dark:from-neutral-900 dark:to-neutral-800 bg-[length:200%_200%] animate-[gradientShift_12s_ease_infinite] py-12 border-b border-border">
-          <div className="max-w-5xl mx-auto px-6 text-center">
+        <header className="relative w-full py-12 border-b border-border overflow-hidden">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage:
+                "url('https://www.shutterstock.com/image-photo/blurred-image-shows-interior-supermarket-260nw-2654524783.jpg')",
+            }}
+          />
+
+          <div className="absolute inset-0 bg-white/70 dark:bg-black/60" />
+
+          <div className="relative max-w-5xl mx-auto px-6 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-5">Leia parimad tooted kiirelt</h1>
             <p className="text-muted-foreground max-w-4xl mx-auto">
-              Otsi, võrdle ja lisa tooted ostukorvi. Kasuta otsingut üleval või sirvi kategooriaid
-              allpool.
+              Otsi ja lisa tooted ostukorvi. Kasuta otsingut üleval või sirvi kategooriaid allpool.
             </p>
           </div>
         </header>
