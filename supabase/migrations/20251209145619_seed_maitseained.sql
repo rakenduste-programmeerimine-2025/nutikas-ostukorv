@@ -24,7 +24,7 @@ VALUES
     (9, 'Karri, SANTA MARIA, 25 g', 0.9400000000000001, 3, 'https://www.selver.ee/img/450/440/resize/6/4/6418474118321.jpg', 0.025, 'kg', 37.6, NULL),
     (9, 'Nelk, SANTA MARIA, 10 g', 0.79, 3, 'https://www.selver.ee/img/450/440/resize/6/4/6418474152783.jpg', 0.01, 'kg', 79.0, NULL),
     (9, 'Kartulitärklis, ALOJAS, 400 g', 1.4720000000000002, 3, 'https://www.selver.ee/img/450/440/resize/4/7/4750073221142.jpg', 0.4, 'kg', 3.68, NULL),
-    (9, 'Liha üldmaitseaine, SANTA MARIA, 35 g', 0.78995, 3, 'https://www.selver.ee/img/450/440/resize/6/4/6418474118291.jpg', 0.035, 'kg', 22.57, NULL),
+    (9, 'Liha üldmaitseaine, SANTA MARIA, 35 g', 0.78995, 3, 'https://www.selver.ee/img/450/440/resize/6/4/6418474118291.jpg', 0.035, 'kg', 22.57, NULL)
 ON CONFLICT (name, store_id) DO UPDATE
 SET
     category_id = EXCLUDED.category_id,

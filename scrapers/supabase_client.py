@@ -143,7 +143,7 @@ def write_products_migration(rows: List[Dict[str, Any]]) -> str:
         "INSERT INTO public.product",
         "    (category_id, name, price, store_id, image_url, quantity_value, quantity_unit, price_per_unit, global_product_id)",
         "VALUES",
-        ",\n".join(values_lines) + ",",
+        ",\n".join(values_lines),
         "ON CONFLICT (name, store_id) DO UPDATE",
         "SET",
         "    category_id = EXCLUDED.category_id,",

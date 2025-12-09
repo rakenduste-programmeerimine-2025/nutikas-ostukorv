@@ -40,7 +40,7 @@ VALUES
     (9, 'Muskaatpähkel Santa Maria 10g', 1.59, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_117138_PCE_EE', 0.01, 'kg', 159.0, NULL),
     (9, 'Küpsetusšokolaad tume ICA 200g', 4.99, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_803763_PCE_EE', 0.2, 'kg', 24.95, NULL),
     (9, 'Till Santa Maria 7g', 0.9, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_100272_PCE_EE', 0.007, 'kg', 128.57142857142858, NULL),
-    (9, 'Kaneelipulgad Kotanyi 12g', 1.59, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_132790_PCE_EE', 0.012, 'kg', 132.5, NULL),
+    (9, 'Kaneelipulgad Kotanyi 12g', 1.59, 2, 'https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,dpr_auto,f_auto,q_auto:low,w_auto/d_ecommerce:backend-fallback.png/MAT_132790_PCE_EE', 0.012, 'kg', 132.5, NULL)
 ON CONFLICT (name, store_id) DO UPDATE
 SET
     category_id = EXCLUDED.category_id,

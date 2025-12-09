@@ -40,7 +40,7 @@ VALUES
     (9, 'Dr.Oetker Tordikaunistused10g värv.tähed', 0.89, 1, 'https://coophaapsalu.ee/wp-content/uploads/2023/12/5907707057182.png', 0.01, 'kg', 89.0, NULL),
     (9, 'Dr.Oetker vaniljesuhkur 160g', 3.79, 1, 'https://coophaapsalu.ee/wp-content/uploads/2024/04/5701073066492.png', 0.16, 'kg', 23.6875, NULL),
     (9, 'Dr.Schär Riivsai paneerimiseks 300g gl.v', 4.75, 1, 'https://coophaapsalu.ee/wp-content/uploads/2025/05/8008698004753.png', 0.3, 'kg', 15.833333333333334, NULL),
-    (9, 'Drogheria Himaalaja roosa sool 90g veski', 2.75, 1, 'https://coophaapsalu.ee/wp-content/uploads/2023/10/8004708005710.png', 0.09, 'kg', 30.555555555555557, NULL),
+    (9, 'Drogheria Himaalaja roosa sool 90g veski', 2.75, 1, 'https://coophaapsalu.ee/wp-content/uploads/2023/10/8004708005710.png', 0.09, 'kg', 30.555555555555557, NULL)
 ON CONFLICT (name, store_id) DO UPDATE
 SET
     category_id = EXCLUDED.category_id,
