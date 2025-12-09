@@ -4,7 +4,6 @@ import { useState } from 'react'
 import FilterBar from '@/components/ui/category-filter-bar'
 import SearchableProductGrid from '@/components/searchable-product-grid'
 import ProductInfoModal from '@/components/ui/product-info-modal'
-
 import type { Product as CardProduct } from '@/components/product-card'
 
 type Store = {
@@ -33,13 +32,12 @@ export default function CategoryProductBrowser({
     .filter(p => (minPrice ? Number(p.price) >= Number(minPrice) : true))
     .filter(p => (maxPrice ? Number(p.price) <= Number(maxPrice) : true))
     .sort((a, b) => {
-      if (sort === 'price_asc') return Number(a.price ?? 0) - Number(b.price ?? 0)
-      if (sort === 'price_desc') return Number(b.price ?? 0) - Number(a.price ?? 0)
+      if (sort === 'price_asc') return Number(a.price) - Number(b.price)
+      if (sort === 'price_desc') return Number(b.price) - Number(a.price)
       return 0
     })
 
   const totalPages = Math.max(1, Math.ceil(filteredAll.length / limit))
-
   const filtered = filteredAll.slice((page - 1) * limit, page * limit)
 
   function goto(p: number) {
@@ -92,7 +90,11 @@ export default function CategoryProductBrowser({
         onSelectProduct={setSelectedProduct}
       />
 
-      <ProductInfoModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      <ProductInfoModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
+
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3 mt-6">
           <button
@@ -132,8 +134,6 @@ export default function CategoryProductBrowser({
           </button>
         </div>
       )}
-
-      <ProductInfoModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
     </div>
   )
 }
