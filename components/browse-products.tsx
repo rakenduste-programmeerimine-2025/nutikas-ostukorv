@@ -59,6 +59,10 @@ export default function BrowseProducts() {
   const categoriesMap = Object.fromEntries((categories ?? []).map((c: any) => [String(c.id), c]))
   const storesMap = Object.fromEntries((stores ?? []).map((s: any) => [String(s.id), s]))
 
+  function goto(p: number) {
+    setPage(Math.min(Math.max(1, p), totalPages))
+  }
+
   return (
     <div className="w-full">
       <div className="flex flex-col gap-4 mb-6">
@@ -128,6 +132,46 @@ export default function BrowseProducts() {
               </div>
             ))}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 mt-8">
+          <button
+            onClick={() => goto(page - 1)}
+            disabled={page === 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Eelmine
+          </button>
+
+          <div className="flex items-center gap-2">
+            {Array.from({ length: Math.min(7, totalPages) }).map((_, i) => {
+              const start = Math.max(1, Math.min(page - 3, totalPages - 6))
+              const p = start + i
+              if (p > totalPages) return null
+
+              return (
+                <button
+                  key={p}
+                  onClick={() => goto(p)}
+                  className={`px-3 py-1 border rounded ${
+                    p === page ? 'bg-foreground text-background' : ''
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            })}
+          </div>
+
+          <button
+            onClick={() => goto(page + 1)}
+            disabled={page === totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Järgmine
+          </button>
+        </div>
+      )}
 
       <ProductInfoModal
         product={selectedProduct}

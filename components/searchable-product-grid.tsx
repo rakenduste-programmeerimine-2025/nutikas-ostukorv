@@ -1,13 +1,6 @@
 'use client'
 
-import ProductCard from '@/components/product-card'
-
-type Product = {
-  id: string | number
-  name: string
-  store_id: string | number | null
-  [key: string]: unknown
-}
+import ProductCard, { Product as CardProduct } from '@/components/product-card'
 
 type Store = {
   id: string | number
@@ -22,23 +15,19 @@ export default function SearchableProductGrid({
   onSelectProduct,
 }: {
   categoryName: string
-  products: Product[]
+  products: CardProduct[]
   storesMap: Record<string, Store>
-  onSelectProduct: (product: Product) => void
+  onSelectProduct: (product: CardProduct) => void
 }) {
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
         {products.map(p => (
-          <div
-            key={p.id}
-            onClick={() => onSelectProduct(p)}
-            className="cursor-pointer"
-          >
+          <div key={p.id} onClick={() => onSelectProduct(p)} className="cursor-pointer">
             <ProductCard
               product={p}
               categoryName={categoryName}
-              storeName={storesMap[String(p.store_id)]?.name}
+              storeName={storesMap[String((p as any).store_id)]?.name}
             />
           </div>
         ))}
