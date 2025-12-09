@@ -1,4 +1,5 @@
 import asyncio
+import re
 from typing import List, Dict, Any
 
 from playwright.async_api import async_playwright
@@ -14,6 +15,38 @@ URL = "https://www.rimi.ee/epood/ee/tooted/liha--ja-kalatooted/hakkliha/c/SH-8-2
 
 CATEGORY_ID = 3
 STORE_ID = 2
+
+
+def parse_quantity_from_name(name: str) -> tuple[float | None, str | None]:
+    """Extract quantity and unit from Rimi product names.
+
+    Handles patterns like "1kg", "1 kg", "500g", "0,5 l", "0.5l".
+
+    Returns (value, unit) where value is normalised to base units:
+      - mass in kg ("kg" or "g" → kg)
+      - volume in litres ("l" or "ml" → l)
+    If nothing can be parsed, returns (None, None).
+    """
+
+    lower = name.lower()
+
+    m = re.search(r"(\d+[.,]?\d*)\s*(kg|g|l|ml)\b", lower)
+    if not m:
+        return None, None
+
+    raw_val, raw_unit = m.groups()
+    try:
+        val = float(raw_val.replace(",", "."))
+    except ValueError:
+        return None, None
+
+    unit = raw_unit
+    if unit == "g":
+        return val / 1000.0, "kg"
+    if unit == "ml":
+        return val / 1000.0, "l"
+
+    return val, unit
 
 
 async def scrape_rimi(
@@ -95,6 +128,16 @@ async def scrape_rimi(
                         elif image_url.startswith("/"):
                             image_url = BASE_URL + image_url
 
+                # Try to infer quantity and compute price per unit
+                quantity_value, quantity_unit = parse_quantity_from_name(name)
+                if quantity_value is not None and price is not None:
+                    try:
+                        price_per_unit = price / quantity_value if quantity_value > 0 else None
+                    except Exception:
+                        price_per_unit = None
+                else:
+                    price_per_unit = None
+
                 products.append(
                     {
                         "category_id": category_id,
@@ -102,6 +145,10 @@ async def scrape_rimi(
                         "price": price,
                         "store_id": store_id,
                         "image_url": image_url,
+                        "quantity_value": quantity_value,
+                        "quantity_unit": quantity_unit,
+                        "price_per_unit": price_per_unit,
+                        "global_product_id": None,
                     }
                 )
 

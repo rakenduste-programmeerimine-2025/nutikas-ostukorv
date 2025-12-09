@@ -82,6 +82,9 @@ def write_products_migration(rows: List[Dict[str, Any]]) -> str:
 
     The migration is idempotent by using ON CONFLICT (name, store_id).
     Returns the path to the created migration file as a string.
+
+    NOTE: This includes the newer unit/normalisation fields so that
+    `supabase db reset` preserves quantity and price-per-unit data as well.
     """
 
     if not rows:
@@ -117,7 +120,19 @@ def write_products_migration(rows: List[Dict[str, Any]]) -> str:
     filename = f"{timestamp}_seed_{safe_slug}.sql"
     path = MIGRATIONS_DIR / filename
 
-    columns = ["category_id", "name", "price", "store_id", "image_url"]
+    # Include new unit fields and global_product_id so seeds fully
+    # reproduce the product data semantics.
+    columns = [
+        "category_id",
+        "name",
+        "price",
+        "store_id",
+        "image_url",
+        "quantity_value",
+        "quantity_unit",
+        "price_per_unit",
+        "global_product_id",
+    ]
 
     values_lines = []
     for r in rows:
@@ -126,14 +141,18 @@ def write_products_migration(rows: List[Dict[str, Any]]) -> str:
 
     sql_lines = [
         "INSERT INTO public.product",
-        "    (category_id, name, price, store_id, image_url)",
+        "    (category_id, name, price, store_id, image_url, quantity_value, quantity_unit, price_per_unit, global_product_id)",
         "VALUES",
         ",\n".join(values_lines) + ",",
         "ON CONFLICT (name, store_id) DO UPDATE",
         "SET",
         "    category_id = EXCLUDED.category_id,",
         "    price = EXCLUDED.price,",
-        "    image_url = EXCLUDED.image_url;",
+        "    image_url = EXCLUDED.image_url,",
+        "    quantity_value = EXCLUDED.quantity_value,",
+        "    quantity_unit = EXCLUDED.quantity_unit,",
+        "    price_per_unit = EXCLUDED.price_per_unit,",
+        "    global_product_id = EXCLUDED.global_product_id;",
         "",
     ]
 
@@ -150,6 +169,10 @@ def upsert_products(rows: List[Dict[str, Any]]) -> None:
       - image_url: str | None
       - category_id: int | None
       - store_id: int | None
+      - quantity_value: float | None
+      - quantity_unit: str | None
+      - price_per_unit: float | None
+      - global_product_id: int | None
 
     We upsert on (name, store_id) so running the same scraper again updates prices
     instead of creating duplicates.
@@ -175,6 +198,10 @@ def upsert_products(rows: List[Dict[str, Any]]) -> None:
                 "image_url": r.get("image_url"),
                 "category_id": r.get("category_id"),
                 "store_id": r.get("store_id"),
+                "quantity_value": r.get("quantity_value"),
+                "quantity_unit": r.get("quantity_unit"),
+                "price_per_unit": r.get("price_per_unit"),
+                "global_product_id": r.get("global_product_id"),
             }
         )
 

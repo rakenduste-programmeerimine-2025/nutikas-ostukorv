@@ -11,28 +11,64 @@ STORE_ID = 1
 URL = "https://www.selver.ee/puu-ja-koogiviljad"
 
 
-def parse_price(text: str | None) -> float | None:
-    """Parse a price string from Selver into a float.
+def parse_price_and_unit(text: str | None) -> tuple[float | None, str | None]:
+    """Parse a price string from Selver into (value, unit).
 
-    Selver price texts can contain currency symbols and units like "€/kg".
-    We extract the first numeric part (e.g. "1,29" from "1,29 €/kg").
+    Examples of supported inputs:
+      "0,74 €/kg"  -> (0.74, "kg")
+      "1,29 €/tk"  -> (1.29, "tk")
+
+    If the unit cannot be detected, returns (value, None).
     """
     if not text:
-        return None
+        return None, None
 
-    # Normalise whitespace and strip currency symbol
-    clean = text.replace("\xa0", " ").replace("€", "").strip()
+    base = text.replace("\xa0", " ").strip()
 
-    # Find the first number fragment (supports integers and decimals with , or .)
-    m = re.search(r"(\d+[.,]\d+|\d+)", clean)
+    m = re.search(r"(\d+[.,]\d+|\d+)", base)
     if not m:
-        return None
+        return None, None
 
     number_str = m.group(1).replace(",", ".")
     try:
-        return float(number_str)
+        value = float(number_str)
     except ValueError:
-        return None
+        return None, None
+
+    unit = None
+    m_unit = re.search(r"/\s*([a-zA-Z]+)", base)
+    if m_unit:
+        unit_raw = m_unit.group(1).lower()
+        if unit_raw in {"kg", "g", "l", "ml", "tk", "pcs"}:
+            unit = unit_raw
+
+    return value, unit
+
+
+def parse_quantity_from_name(name: str) -> tuple[float | None, str | None]:
+    """Try to infer pack quantity from the product name.
+
+    Patterns: "1kg", "1 kg", "500g", "0,5 l", etc. Normalised to kg/l.
+    """
+    lower = name.lower()
+
+    m = re.search(r"(\d+[.,]?\d*)\s*(kg|g|l|ml)\b", lower)
+    if not m:
+        return None, None
+
+    raw_val, raw_unit = m.groups()
+    try:
+        val = float(raw_val.replace(",", "."))
+    except ValueError:
+        return None, None
+
+    unit = raw_unit
+    if unit == "g":
+        return val / 1000.0, "kg"
+    if unit == "ml":
+        return val / 1000.0, "l"
+
+    return val, unit
 
 
 async def scrape_selver(
@@ -84,7 +120,45 @@ async def scrape_selver(
                 price_el = card.locator(".Price__main").first
 
             price_text = await price_el.inner_text() if await price_el.count() else None
-            price = parse_price(price_text)
+            unit_price, unit_from_price = parse_price_and_unit(price_text)
+
+            # For loose items (e.g. fruit/veg), price on the site is already
+            # a unit price (€/kg, €/l, €/tk). We treat that as price_per_unit
+            # and assume a notional quantity of 1 unit for comparison.
+            quantity_value_name, quantity_unit_name = parse_quantity_from_name(name or "")
+
+            canonical_unit = None
+            if unit_from_price:
+                if unit_from_price in {"tk", "pcs"}:
+                    canonical_unit = "pcs"
+                elif unit_from_price in {"kg", "g"}:
+                    canonical_unit = "kg"
+                elif unit_from_price in {"l", "ml"}:
+                    canonical_unit = "l"
+                else:
+                    canonical_unit = unit_from_price.lower()
+            elif quantity_unit_name:
+                canonical_unit = quantity_unit_name
+
+            if quantity_value_name is not None:
+                quantity_value = quantity_value_name
+                quantity_unit = canonical_unit or quantity_unit_name
+            elif canonical_unit is not None:
+                quantity_value = 1.0
+                quantity_unit = canonical_unit
+            else:
+                quantity_value = None
+                quantity_unit = None
+
+            if unit_price is not None:
+                price_per_unit = unit_price
+                if quantity_value is not None:
+                    price = unit_price * quantity_value
+                else:
+                    price = unit_price
+            else:
+                price_per_unit = None
+                price = None
 
             image_url = None
             if i < count_imgs:
@@ -100,6 +174,10 @@ async def scrape_selver(
                     "price": price,
                     "store_id": store_id,
                     "image_url": image_url,
+                    "quantity_value": quantity_value,
+                    "quantity_unit": quantity_unit,
+                    "price_per_unit": price_per_unit,
+                    "global_product_id": None,
                 }
             )
 
