@@ -8,6 +8,7 @@ from .supabase_client import upsert_products
 CATEGORY_ID = 1
 STORE_ID = 1
 URL = "https://coophaapsalu.ee/tootekategooria/piimatooted-munad-void/piim/"
+BASE_URL = "https://coophaapsalu.ee"
 
 
 def parse_price(price_text: str) -> float | None:
@@ -65,54 +66,112 @@ def scrape_coop(
 
     headers = {"User-Agent": "Mozilla/5.0"}
 
-    response = requests.get(url, headers=headers, timeout=30)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, "lxml")
-
-    products = soup.select("ul.products li.product")
-
     rows: List[Dict[str, Any]] = []
 
-    for product in products:
-        name_el = product.select_one("h2.woocommerce-loop-product__title")
-        price_el = product.select_one("span.woocommerce-Price-amount")
+    current_url = url
 
-        # image
-        img_el = product.select_one("img")
-        image_url = None
-        if img_el:
-            # Some WooCommerce sites use lazy-loading
-            image_url = img_el.get("data-src") or img_el.get("src")
+    while True:
+        print(f"[coop] Fetching {current_url}")
+        response = requests.get(current_url, headers=headers, timeout=30)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "lxml")
 
-        name = name_el.text.strip() if name_el else "Unknown"
-        price_text = price_el.text.strip() if price_el else "0"
-        price = parse_price(price_text)
+        products = soup.select("ul.products li.product")
+        count = len(products)
+        print(f"[coop] Found {count} products on page")
 
-        # Try to infer quantity and compute price per unit
-        quantity_value, quantity_unit = parse_quantity_from_name(name)
-        if quantity_value is not None and price is not None:
-            try:
-                price_per_unit = price / quantity_value if quantity_value > 0 else None
-            except Exception:
+        if not products:
+            break
+
+        for product in products:
+            name_el = product.select_one("h2.woocommerce-loop-product__title")
+            price_el = product.select_one("span.woocommerce-Price-amount")
+
+            # image
+            img_el = product.select_one("img")
+            image_url = None
+            if img_el:
+                # Some WooCommerce sites use lazy-loading
+                image_url = img_el.get("data-src") or img_el.get("src")
+
+            name = name_el.text.strip() if name_el else "Unknown"
+            price_text = price_el.text.strip() if price_el else "0"
+            price = parse_price(price_text)
+
+            # Try to infer quantity and compute price per unit
+            quantity_value, quantity_unit = parse_quantity_from_name(name)
+            if quantity_value is not None and price is not None:
+                try:
+                    price_per_unit = (
+                        price / quantity_value if quantity_value > 0 else None
+                    )
+                except Exception:
+                    price_per_unit = None
+            else:
                 price_per_unit = None
-        else:
-            price_per_unit = None
 
-        rows.append(
-            {
-                "category_id": category_id,
-                "name": name,
-                "price": price,
-                "store_id": store_id,
-                "image_url": image_url,
-                "quantity_value": quantity_value,
-                "quantity_unit": quantity_unit,
-                "price_per_unit": price_per_unit,
-                # global_product_id will be assigned later by a separate
-                # normalisation/matching step.
-                "global_product_id": None,
-            }
-        )
+            print(
+                f"[coop] product: {name} | price={price} | q={quantity_value} {quantity_unit} | ppu={price_per_unit}"
+            )
+
+            rows.append(
+                {
+                    "category_id": category_id,
+                    "name": name,
+                    "price": price,
+                    "store_id": store_id,
+                    "image_url": image_url,
+                    "quantity_value": quantity_value,
+                    "quantity_unit": quantity_unit,
+                    "price_per_unit": price_per_unit,
+                    # global_product_id will be assigned later by a separate
+                    # normalisation/matching step.
+                    "global_product_id": None,
+                }
+            )
+
+        # Look for a "next" page link in WooCommerce pagination.
+        # Some themes only render numeric page links (1, 2, 3, …) without an explicit
+        # "next" anchor, so we handle both cases.
+        pagination = soup.select_one(".woocommerce-pagination")
+        next_link = None
+
+        if pagination:
+            # 1) Prefer an explicit "next" link if it exists
+            next_link = pagination.select_one("a.next, a.next.page-numbers")
+
+            # 2) Fallback: current page is a <span class="page-numbers current">N</span>;
+            #    pick the next numeric <a class="page-numbers">M</a> where M > N.
+            if not next_link:
+                current = pagination.select_one("span.page-numbers.current")
+                if current:
+                    try:
+                        cur_num = int(current.text.strip())
+                    except ValueError:
+                        cur_num = None
+
+                    if cur_num is not None:
+                        for a in pagination.select("a.page-numbers"):
+                            try:
+                                num = int(a.text.strip())
+                            except ValueError:
+                                continue
+                            if num > cur_num:
+                                next_link = a
+                                break
+
+        if not next_link or not next_link.get("href"):
+            break
+
+        href = next_link["href"].strip()
+        if href.startswith("http"):
+            current_url = href
+        else:
+            # Handle relative links like "/page/2/" or "?paged=2"
+            if href.startswith("/"):
+                current_url = BASE_URL + href
+            else:
+                current_url = current_url.rstrip("/") + "/" + href
 
     print(f"Done (COOP) — {len(rows)} products scraped from Coop")
     return rows
