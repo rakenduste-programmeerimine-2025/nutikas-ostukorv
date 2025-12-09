@@ -13,12 +13,9 @@ const supabase = createClient(
 
 export default async function Page() {
   const { data: stores, error: storeError } = await supabase.from('store').select('*')
-  const { data: categories, error: categoryError } =
-    await supabase.from('category').select('*')
-  const { data: products, error: productError } =
-    await supabase.from('product').select('*')
-  const { data: users, error: userError } =
-    await supabase.from('user').select('*')
+  const { data: categories, error: categoryError } = await supabase.from('category').select('*')
+  const { data: products, error: productError } = await supabase.from('product').select('*')
+  const { data: users, error: userError } = await supabase.from('user').select('*')
 
   if (storeError || categoryError || productError || userError) {
     console.error('Errors:', storeError, categoryError, productError, userError)
@@ -31,7 +28,7 @@ export default async function Page() {
 
   return (
     <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-14 items-center">
+      <div className="flex-1 w-full flex flex-col gap-5 items-center">
         <Navbar right={<AuthButton />} />
 
         <PillsNav active="Andmed" />
