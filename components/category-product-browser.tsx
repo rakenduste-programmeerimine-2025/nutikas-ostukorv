@@ -12,8 +12,9 @@ export default function CategoryProductBrowser({ products, stores }) {
   const [limit, setLimit] = useState(30)
   const [sort, setSort] = useState<string | null>('price_asc')
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [page, setPage] = useState(1)
 
-  const filtered = products
+  const filteredAll = products
     .filter(p => (selectedStore ? String(p.store_id) === selectedStore : true))
     .filter(p => (minPrice ? Number(p.price) >= Number(minPrice) : true))
     .filter(p => (maxPrice ? Number(p.price) <= Number(maxPrice) : true))
@@ -22,7 +23,14 @@ export default function CategoryProductBrowser({ products, stores }) {
       if (sort === 'price_desc') return b.price - a.price
       return 0
     })
-    .slice(0, limit)
+
+  const totalPages = Math.max(1, Math.ceil(filteredAll.length / limit))
+
+  const filtered = filteredAll.slice((page - 1) * limit, page * limit)
+
+  function goto(p: number) {
+    setPage(Math.min(Math.max(1, p), totalPages))
+  }
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -30,21 +38,37 @@ export default function CategoryProductBrowser({ products, stores }) {
         stores={stores}
         onCategoryChange={() => {}}
         selectedStore={selectedStore}
-        onStoreChange={setSelectedStore}
+        onStoreChange={v => {
+          setSelectedStore(v)
+          setPage(1)
+        }}
         minPrice={minPrice}
         maxPrice={maxPrice}
-        onMinPriceChange={setMinPrice}
-        onMaxPriceChange={setMaxPrice}
+        onMinPriceChange={v => {
+          setMinPrice(v)
+          setPage(1)
+        }}
+        onMaxPriceChange={v => {
+          setMaxPrice(v)
+          setPage(1)
+        }}
         limit={limit}
-        onLimitChange={setLimit}
+        onLimitChange={n => {
+          setLimit(n)
+          setPage(1)
+        }}
         selectedSort={sort}
-        onSortChange={setSort}
+        onSortChange={v => {
+          setSort(v)
+          setPage(1)
+        }}
         onClear={() => {
           setSelectedStore(null)
           setMinPrice('')
           setMaxPrice('')
           setLimit(30)
           setSort('price_asc')
+          setPage(1)
         }}
       />
 
@@ -54,6 +78,46 @@ export default function CategoryProductBrowser({ products, stores }) {
         storesMap={Object.fromEntries(stores.map(s => [String(s.id), s]))}
         onSelectProduct={setSelectedProduct}
       />
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <button
+            onClick={() => goto(page - 1)}
+            disabled={page === 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Eelmine
+          </button>
+
+          <div className="flex items-center gap-2">
+            {Array.from({ length: Math.min(7, totalPages) }).map((_, i) => {
+              const start = Math.max(1, Math.min(page - 3, totalPages - 6))
+              const p = start + i
+              if (p > totalPages) return null
+
+              return (
+                <button
+                  key={p}
+                  onClick={() => goto(p)}
+                  className={`px-3 py-1 border rounded ${
+                    p === page ? 'bg-foreground text-background' : ''
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            })}
+          </div>
+
+          <button
+            onClick={() => goto(page + 1)}
+            disabled={page === totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Järgmine
+          </button>
+        </div>
+      )}
 
       <ProductInfoModal
         product={selectedProduct}
