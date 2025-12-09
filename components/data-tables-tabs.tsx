@@ -8,15 +8,17 @@ interface DataTablesTabsProps {
   categories: any[]
   stores: any[]
   users: any[]
+  globalProducts: any[]
 }
 
-type TabId = "products" | "categories" | "stores" | "users"
+type TabId = "products" | "categories" | "stores" | "users" | "global_products"
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "products", label: "Tooted" },
   { id: "categories", label: "Kategooriad" },
   { id: "stores", label: "Poed" },
   { id: "users", label: "Kasutajad" },
+  { id: "global_products", label: "Global tooted" },
 ]
 
 export default function DataTablesTabs({
@@ -24,6 +26,7 @@ export default function DataTablesTabs({
   categories,
   stores,
   users,
+  globalProducts,
 }: DataTablesTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("products")
 
@@ -193,6 +196,64 @@ export default function DataTablesTabs({
                       className="py-4 px-3 text-sm text-muted-foreground text-center"
                     >
                       Kasutajaid ei leitud.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "global_products" && (
+        <div className="w-full space-y-3">
+          <h3 className="text-lg font-semibold">Global tooted</h3>
+          <p className="text-xs text-muted-foreground">
+            Canonical/global_product tabel, mida kasutatakse sama reaalse toote
+            seostamiseks eri poodide toodetega.
+          </p>
+          <div className="w-full overflow-x-auto rounded-md border border-border">
+            <table className="w-full border-collapse text-sm sm:text-base">
+              <thead className="border-b border-border text-left">
+                <tr className="[&>th]:py-2 [&>th]:px-3">
+                  <th className="font-medium w-[80px]">ID</th>
+                  <th className="font-medium">Nimi</th>
+                  <th className="font-medium hidden sm:table-cell">Bränd</th>
+                  <th className="font-medium hidden md:table-cell">Kategooria ID</th>
+                  <th className="font-medium hidden lg:table-cell">GTIN / triipkood</th>
+                  <th className="font-medium hidden xl:table-cell">Märkused</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {(globalProducts ?? []).map((gp: any) => (
+                  <tr key={gp.id} className="[&>td]:py-2 [&>td]:px-3 align-top">
+                    <td className="text-xs sm:text-sm text-muted-foreground">
+                      {gp.id}
+                    </td>
+                    <td className="font-medium whitespace-normal break-words">
+                      {gp.name}
+                    </td>
+                    <td className="hidden sm:table-cell whitespace-nowrap">
+                      {gp.brand ?? '-'}
+                    </td>
+                    <td className="hidden md:table-cell whitespace-nowrap">
+                      {gp.category_id ?? '-'}
+                    </td>
+                    <td className="hidden lg:table-cell whitespace-nowrap break-all">
+                      {gp.gtin ?? '-'}
+                    </td>
+                    <td className="hidden xl:table-cell whitespace-normal break-words text-xs sm:text-sm">
+                      {gp.notes ?? '-'}
+                    </td>
+                  </tr>
+                ))}
+                {(globalProducts ?? []).length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="py-4 px-3 text-sm text-muted-foreground text-center"
+                    >
+                      Global tooteid ei leitud.
                     </td>
                   </tr>
                 )}

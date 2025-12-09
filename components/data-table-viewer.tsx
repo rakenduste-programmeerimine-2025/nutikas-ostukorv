@@ -81,8 +81,15 @@ export default function DataTableViewer({
         <table className="w-full border-collapse text-sm sm:text-base">
           <thead className="border-b border-border text-left">
             <tr className="[&>th]:py-2 [&>th]:px-3">
+              <th className="font-medium w-[70px] hidden sm:table-cell">ID</th>
               <th className="font-medium">Toode</th>
-              <th className="font-medium">Hind</th>
+              <th className="font-medium whitespace-nowrap">Hind</th>
+              <th className="font-medium whitespace-nowrap hidden md:table-cell">
+                Ühiku hind
+              </th>
+              <th className="font-medium whitespace-nowrap hidden sm:table-cell">
+                Kogus
+              </th>
               <th className="font-medium">Pood</th>
               <th className="font-medium hidden md:table-cell">Kategooria</th>
             </tr>
@@ -103,16 +110,42 @@ export default function DataTableViewer({
                 return null
               })()
 
+              const unitPrice = (() => {
+                const value = product.price_per_unit
+                if (typeof value === "number") return value.toFixed(3)
+                if (typeof value === "string") return value
+                return null
+              })()
+
+              const quantityDisplay = (() => {
+                const qv = product.quantity_value
+                const qu = product.quantity_unit
+                if (qv == null && !qu) return "-"
+                if (qv == null) return String(qu)
+                return `${qv} ${qu ?? ""}`.trim()
+              })()
+
               return (
                 <tr
                   key={product.id}
                   className="[&>td]:py-2 [&>td]:px-3 align-top"
                 >
+                  <td className="hidden sm:table-cell text-xs text-muted-foreground whitespace-nowrap">
+                    {product.id}
+                  </td>
                   <td className="font-medium whitespace-normal break-words">
                     {product.name}
                   </td>
                   <td className="whitespace-nowrap text-right">
                     {price ? `${price} €` : "-"}
+                  </td>
+                  <td className="hidden md:table-cell whitespace-nowrap text-right">
+                    {unitPrice
+                      ? `${unitPrice} € / ${product.quantity_unit ?? "ühik"}`
+                      : "-"}
+                  </td>
+                  <td className="hidden sm:table-cell whitespace-nowrap">
+                    {quantityDisplay}
                   </td>
                   <td className="whitespace-nowrap">
                     {store?.name ?? "-"}
@@ -127,7 +160,7 @@ export default function DataTableViewer({
             {filteredProducts.length === 0 && (
               <tr>
                 <td
-                  colSpan={4}
+                  colSpan={7}
                   className="py-4 px-3 text-sm text-muted-foreground text-center"
                 >
                   Valitud kategoorias tooteid ei leitud.

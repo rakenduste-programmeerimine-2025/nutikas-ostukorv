@@ -19,9 +19,11 @@ export default async function Page() {
     await supabase.from('product').select('*')
   const { data: users, error: userError } =
     await supabase.from('user').select('*')
+  const { data: globalProducts, error: globalProductError } =
+    await supabase.from('global_product').select('*')
 
-  if (storeError || categoryError || productError || userError) {
-    console.error('Errors:', storeError, categoryError, productError, userError)
+  if (storeError || categoryError || productError || userError || globalProductError) {
+    console.error('Errors:', storeError, categoryError, productError, userError, globalProductError)
     return <p>Error loading data. Check console.</p>
   }
 
@@ -50,6 +52,7 @@ export default async function Page() {
               categories={categoriesOrdered ?? []}
               stores={stores ?? []}
               users={users ?? []}
+              globalProducts={globalProducts ?? []}
             />
           </section>
         </div>
