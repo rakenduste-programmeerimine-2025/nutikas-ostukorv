@@ -196,6 +196,11 @@ export default function ProductInfoModal({
 
                 const productId = Number(c.product?.id)
 
+                const currentQty =
+                  cart && Number.isFinite(productId)
+                    ? cart.items.find((it: any) => it.product.id === productId)?.quantity ?? 0
+                    : 0
+
                 return (
                   <li
                     key={c.product?.id ?? idx}
@@ -209,10 +214,10 @@ export default function ProductInfoModal({
                             {productName}
                           </span>
                           <span className="text-right font-semibold whitespace-nowrap">
-                            {ppu2
-                              ? `${ppu2} € / ${quantityUnit}`
-                              : price2
+                            {price2
                               ? `${price2} €`
+                              : ppu2
+                              ? `${ppu2} € / ${quantityUnit}`
                               : '-'}
                           </span>
                         </div>
@@ -252,11 +257,20 @@ export default function ProductInfoModal({
                     {/* Second row: store + quantity */}
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="truncate pr-2">{storeLabel}</span>
-                      {quantityValue != null && (
+                      <div className="flex items-center gap-2 whitespace-nowrap">
                         <span>
-                          {quantityValue} {quantityUnit}
+                          {ppu2
+                            ? `${ppu2} € / ${quantityUnit}`
+                            : quantityValue != null
+                            ? `${quantityValue} ${quantityUnit}`
+                            : ''}
                         </span>
-                      )}
+                        {currentQty > 0 && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-emerald-600/10 text-emerald-500 text-[10px]">
+                            x{currentQty}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </li>
                 )

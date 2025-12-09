@@ -77,34 +77,87 @@ export async function GET(req: Request) {
     const baseName = String((base as any).name ?? '').toLowerCase()
 
     const STOP_WORDS = new Set([
+      // brands / stores
       'santa',
       'maria',
       'rimi',
       'selver',
       'coop',
       'smart',
+      'anatols',
+      'dr',
+      'oetker',
+      'meira',
+      'kotanyi',
+      'ica',
+      'kati',
+      'nordic',
+      'veski',
+      'mati',
+      'dan',
+      'sukker',
+      'diamant',
+      'first',
+      'price',
+      // generic descriptors
       'klassikaline',
       'maitseaine',
       'maitseained',
+      'maitseainesegu',
       'segu',
       'mix',
       'pulber',
       'jahvatatud',
+      'purustatud',
       'hakitud',
+      'viilutatud',
+      'laastud',
       'premium',
       'classic',
     ])
 
-    function tokens(name: string): string[] {
+    function normalizeBaseName(name: string): string {
       return name
         .toLowerCase()
+        // remove common brand phrases
+        .replace(/santa\s+maria/g, ' ')
+        .replace(/rimi\s+smart/g, ' ')
+        .replace(/first\s+price/g, ' ')
+        .replace(/veski\s+mati/g, ' ')
+        .replace(/dan\s+sukker/g, ' ')
+        // drop obvious quantity markers with units ("30 g", "0,5g", etc.)
+        .replace(/\d+[.,]?\d*\s*(kg|g|l|ml|tk)\b/g, ' ')
+        // drop standalone numbers
+        .replace(/\b\d+[.,]?\d*\b/g, ' ')
+        .replace(/[,;:%()]/g, ' ')
+    }
+
+    function tokens(name: string): string[] {
+      return normalizeBaseName(name)
         .replace(/[^a-zäöõü0-9]+/g, ' ')
         .split(' ')
         .map(t => t.trim())
         .filter(t => t && !STOP_WORDS.has(t))
     }
 
+    function extractCoreKey(name: string): string | null {
+      const toks = tokens(name)
+      if (toks.length === 0) return null
+
+      // Try to pick the most "item-like" token first (things ending with
+      // maitseaine / pipar / sool / suhkur / paprika etc.).
+      const primary = toks.find(t =>
+        /(maitseaine|pipar|sool|suhkur|paprika|rosmariin|kurkum|karri|safran|till|kaneel)/.test(
+          t
+        )
+      )
+
+      const key = (primary ?? toks.join(' ')).trim()
+      return key || null
+    }
+
     const baseTokens = new Set(tokens(baseName))
+    const baseCoreKey = extractCoreKey(baseName)
 
     const baseQtyVal = (base as any).quantity_value as number | null
     const baseQtyUnit = (base as any).quantity_unit as string | null
@@ -126,15 +179,20 @@ export async function GET(req: Request) {
       }
 
       const name = String(other.name ?? '').toLowerCase()
-      const otherTokens = new Set(tokens(name))
-      let overlap = 0
-      baseTokens.forEach(t => {
-        if (otherTokens.has(t)) overlap++
-      })
 
-      // Require at least one meaningful shared token when falling back to
-      // heuristic matching.
-      if (overlap === 0) return false
+      // 1) Prefer strict core-name equality when we can extract it for both
+      const otherCoreKey = extractCoreKey(name)
+      if (baseCoreKey && otherCoreKey) {
+        if (baseCoreKey !== otherCoreKey) return false
+      } else {
+        // 2) Fallback: require at least one meaningful shared token
+        const otherTokens = new Set(tokens(name))
+        let overlap = 0
+        baseTokens.forEach(t => {
+          if (otherTokens.has(t)) overlap++
+        })
+        if (overlap === 0) return false
+      }
 
       // If we have price-per-unit info for both, reject candidates that are
       // orders of magnitude cheaper / more expensive.
