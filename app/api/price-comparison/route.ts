@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getTextMatchingHelpersForCategorySlug } from '@/lib/product-matching'
 
 interface ProductRow {
   id: number
@@ -49,6 +50,20 @@ export async function GET(req: Request) {
     const baseQuantityUnit = base.quantity_unit
     const baseQuantityValue = base.quantity_value
 
+    // Look up category slug so we can use per-category text-matching rules
+    let categorySlug: string | null = null
+    if (baseCategoryId != null) {
+      const { data: catRows } = await supabase
+        .from('category')
+        .select('slug')
+        .eq('id', baseCategoryId)
+        .limit(1)
+
+      categorySlug = catRows && catRows.length > 0 ? (catRows[0] as { slug: string }).slug : null
+    }
+
+    const { tokens, extractCoreKey } = getTextMatchingHelpersForCategorySlug(categorySlug)
+
     // 2) Build candidate query
     let candidatesQuery = supabase
       .from('product')
@@ -87,86 +102,6 @@ export async function GET(req: Request) {
     // Basic helpers for textual and price similarity so we don't compare
     // completely unrelated items (e.g. saffron vs table salt).
     const baseName = String(base.name ?? '').toLowerCase()
-
-    const STOP_WORDS = new Set([
-      // brands / stores
-      'santa',
-      'maria',
-      'rimi',
-      'selver',
-      'coop',
-      'smart',
-      'anatols',
-      'dr',
-      'oetker',
-      'meira',
-      'kotanyi',
-      'ica',
-      'kati',
-      'nordic',
-      'veski',
-      'mati',
-      'dan',
-      'sukker',
-      'diamant',
-      'first',
-      'price',
-      // generic descriptors
-      'klassikaline',
-      'maitseaine',
-      'maitseained',
-      'maitseainesegu',
-      'segu',
-      'mix',
-      'pulber',
-      'jahvatatud',
-      'purustatud',
-      'hakitud',
-      'viilutatud',
-      'laastud',
-      'premium',
-      'classic',
-    ])
-
-    function normalizeBaseName(name: string): string {
-      return name
-        .toLowerCase()
-        // remove common brand phrases
-        .replace(/santa\s+maria/g, ' ')
-        .replace(/rimi\s+smart/g, ' ')
-        .replace(/first\s+price/g, ' ')
-        .replace(/veski\s+mati/g, ' ')
-        .replace(/dan\s+sukker/g, ' ')
-        // drop obvious quantity markers with units ("30 g", "0,5g", etc.)
-        .replace(/\d+[.,]?\d*\s*(kg|g|l|ml|tk)\b/g, ' ')
-        // drop standalone numbers
-        .replace(/\b\d+[.,]?\d*\b/g, ' ')
-        .replace(/[,;:%()]/g, ' ')
-    }
-
-    function tokens(name: string): string[] {
-      return normalizeBaseName(name)
-        .replace(/[^a-zäöõü0-9]+/g, ' ')
-        .split(' ')
-        .map(t => t.trim())
-        .filter(t => t && !STOP_WORDS.has(t))
-    }
-
-    function extractCoreKey(name: string): string | null {
-      const toks = tokens(name)
-      if (toks.length === 0) return null
-
-      // Try to pick the most "item-like" token first (things ending with
-      // maitseaine / pipar / sool / suhkur / paprika etc.).
-      const primary = toks.find(t =>
-        /(maitseaine|pipar|sool|suhkur|paprika|rosmariin|kurkum|karri|safran|till|kaneel)/.test(
-          t
-        )
-      )
-
-      const key = (primary ?? toks.join(' ')).trim()
-      return key || null
-    }
 
     const baseTokens = new Set(tokens(baseName))
     const baseCoreKey = extractCoreKey(baseName)
