@@ -13,12 +13,17 @@ const supabase = createClient(
 
 export default async function Page() {
   const { data: stores, error: storeError } = await supabase.from('store').select('*')
-  const { data: categories, error: categoryError } = await supabase.from('category').select('*')
-  const { data: products, error: productError } = await supabase.from('product').select('*')
-  const { data: users, error: userError } = await supabase.from('user').select('*')
+  const { data: categories, error: categoryError } =
+    await supabase.from('category').select('*')
+  const { data: products, error: productError } =
+    await supabase.from('product').select('*')
+  const { data: users, error: userError } =
+    await supabase.from('user').select('*')
+  const { data: globalProducts, error: globalProductError } =
+    await supabase.from('global_product').select('*')
 
-  if (storeError || categoryError || productError || userError) {
-    console.error('Errors:', storeError, categoryError, productError, userError)
+  if (storeError || categoryError || productError || userError || globalProductError) {
+    console.error('Errors:', storeError, categoryError, productError, userError, globalProductError)
     return <p>Error loading data. Check console.</p>
   }
 
@@ -47,6 +52,7 @@ export default async function Page() {
               categories={categoriesOrdered ?? []}
               stores={stores ?? []}
               users={users ?? []}
+              globalProducts={globalProducts ?? []}
             />
           </section>
         </div>
