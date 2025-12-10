@@ -19,8 +19,7 @@ export default async function Home() {
   let santaCrossStore: any[] = []
 
   if (allProducts && stores) {
-    const lowerName = (s: string | null | undefined) =>
-      (s ?? '').toString().toLowerCase()
+    const lowerName = (s: string | null | undefined) => (s ?? '').toString().toLowerCase()
 
     const coopStore = stores.find((s: any) => lowerName(s.name).includes('coop'))
     const rimiStore = stores.find((s: any) => lowerName(s.name).includes('rimi'))
@@ -96,7 +95,7 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center bg-background">
+    <main className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-background">
       <div className="w-full">
         <Navbar
           right={<AuthButton />}
