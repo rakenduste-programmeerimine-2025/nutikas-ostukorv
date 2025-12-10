@@ -37,7 +37,7 @@ export default function SearchResultsClient({
   const [maxPrice, setMaxPrice] = useState('')
   const [limit, setLimit] = useState(30)
   const [sort, setSort] = useState<string | null>('price_asc')
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<AnyProduct | null>(null)
   const [page, setPage] = useState(1)
 
   const groups = useMemo(
@@ -60,9 +60,7 @@ export default function SearchResultsClient({
     }
 
     return groups
-      .filter(g =>
-        selectedCategory ? String(g.categoryId) === selectedCategory : true
-      )
+      .filter(g => (selectedCategory ? String(g.categoryId) === selectedCategory : true))
       .filter(g =>
         // At least one product in the group must be in the selected store and price range.
         g.items.some(p => meetsStore(p) && meetsPrice(p))
@@ -83,6 +81,19 @@ export default function SearchResultsClient({
       })
       .slice(0, limit)
   }, [groups, selectedCategory, selectedStore, minPrice, maxPrice, sort, limit])
+
+  // Pagination: compute visible groups for current page
+  const totalPages = Math.max(1, Math.ceil(filtered.length / limit))
+
+  const visibleGroups = useMemo(() => {
+    const start = (page - 1) * limit
+    return filtered.slice(start, start + limit)
+  }, [filtered, page, limit])
+
+  const goto = (p: number) => {
+    const next = Math.max(1, Math.min(p, totalPages))
+    setPage(next)
+  }
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -131,12 +142,10 @@ export default function SearchResultsClient({
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map(group => {
+        {visibleGroups.map(group => {
           const rep = group.representative
           const categoryName =
-            group.categoryId != null
-              ? categoriesNameMap[String(group.categoryId)]
-              : undefined
+            group.categoryId != null ? categoriesNameMap[String(group.categoryId)] : undefined
 
           const storeNames = Array.from(
             new Set(
@@ -150,16 +159,14 @@ export default function SearchResultsClient({
             <div key={group.key} className="transition hover:scale-[1.01]">
               <div onClick={() => setSelectedProduct(rep)}>
                 <ProductCard
-                  product={rep}
+                  product={rep as any}
                   categoryName={categoryName}
-                  storeNames={storeNames}
+                  storeName={storeNames.join(', ')}
                 />
               </div>
               <div className="mt-2 text-sm text-muted-foreground flex items-center justify-between">
                 {group.items.length > 1 && (
-                  <span className="font-medium">
-                    {group.items.length} poodi
-                  </span>
+                  <span className="font-medium">{group.items.length} poodi</span>
                 )}
               </div>
             </div>
