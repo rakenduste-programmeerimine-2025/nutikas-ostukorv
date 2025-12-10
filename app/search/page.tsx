@@ -17,10 +17,15 @@ export default async function SearchPage({ searchParams }: { searchParams: any }
   let error: any = null
 
   if (query) {
-    const { data, error: dbError } = await supabase
-      .from('product')
-      .select('*')
-      .ilike('name', `%${query}%`)
+    const words = query.toLowerCase().split(/\s+/).filter(Boolean)
+
+    let q = supabase.from('product').select('*')
+
+    for (const word of words) {
+      q = q.ilike('name', `%${word}%`)
+    }
+
+    const { data, error: dbError } = await q
 
     error = dbError
     filteredResults = data ?? []
@@ -46,9 +51,7 @@ export default async function SearchPage({ searchParams }: { searchParams: any }
       <div className="relative min-h-screen flex flex-col items-center bg-background/80 backdrop-blur-sm">
         <Navbar
           right={<AuthButton />}
-          globalSearch={
-            <HomeClientWrapper allProducts={allProducts || []} />
-          }
+          globalSearch={<HomeClientWrapper allProducts={allProducts || []} />}
         />
 
         <div className="w-full max-w-5xl mx-auto p-6">
