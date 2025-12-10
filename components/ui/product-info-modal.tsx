@@ -208,8 +208,34 @@ export default function ProductInfoModal({
 
           {priceComparison && priceComparison.comparisons.length > 0 && (() => {
             const comparisons: any[] = priceComparison.comparisons ?? []
-            const sameItemsFromApi = comparisons.filter(c => c.isSameItem)
+            const sameItemsFromApiRaw = comparisons.filter(c => c.isSameItem)
             const similarItemsRaw = comparisons.filter(c => !c.isSameItem)
+
+            const toNum = (v: unknown): number | null => {
+              const n = Number(v as any)
+              return Number.isFinite(n) ? n : null
+            }
+
+            const priceMetric = (c: any): number => {
+              const ppu = toNum(c.pricePerUnit ?? (c.product as any)?.price_per_unit)
+              const price = toNum(c.price ?? (c.product as any)?.price)
+              return ppu ?? price ?? Number.POSITIVE_INFINITY
+            }
+
+            // Deduplicate exact matches per store: keep the cheapest candidate for each store.
+            const sameItemsFromApi = (() => {
+              const byStore = new Map<string, any>()
+              for (const c of sameItemsFromApiRaw) {
+                const storeId = c.store?.id ?? (c.store as any)?.id
+                if (storeId == null) continue
+                const key = String(storeId)
+                const existing = byStore.get(key)
+                if (!existing || priceMetric(c) < priceMetric(existing)) {
+                  byStore.set(key, c)
+                }
+              }
+              return Array.from(byStore.values())
+            })()
 
             // Synthesize a base-row entry for the store where the user opened
             // the modal so that the top comparison block always includes it.
@@ -235,9 +261,23 @@ export default function ProductInfoModal({
                   }
                 : null
 
-            const sameItems = baseRow
-              ? [baseRow, ...sameItemsFromApi.filter(c => c.store?.name !== baseStoreName)]
-              : sameItemsFromApi
+            const sameItems = (() => {
+              const list = baseRow
+                ? [baseRow, ...sameItemsFromApi.filter(c => c.store?.name !== baseStoreName)]
+                : sameItemsFromApi
+
+              // Final dedupe by store name to avoid showing the same store multiple
+              // times if there are still duplicates remaining.
+              const byName = new Map<string, any>()
+              for (const c of list) {
+                const name = (c.store?.name as string | undefined) ?? 'Tundmatu pood'
+                const existing = byName.get(name)
+                if (!existing || priceMetric(c) < priceMetric(existing)) {
+                  byName.set(name, c)
+                }
+              }
+              return Array.from(byName.values())
+            })()
 
             // Group "similar" items by normalised product name so that the same
             // logical variant across multiple stores appears once with
