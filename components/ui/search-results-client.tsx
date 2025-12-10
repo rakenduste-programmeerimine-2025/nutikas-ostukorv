@@ -135,13 +135,6 @@ export default function SearchResultsClient({
                   storeNames={storeNames}
                 />
               </div>
-              <div className="mt-2 text-sm text-muted-foreground flex items-center justify-between">
-                {group.items.length > 1 && (
-                  <span className="font-medium">
-                    {group.items.length} poodi
-                  </span>
-                )}
-              </div>
             </div>
           )
         })}
