@@ -159,7 +159,7 @@ export default function BrowseProducts() {
                   <ProductCard
                     product={p}
                     categoryName={categoriesMap[String((p as any).category_id)]?.name}
-                    storeName={multi && multi.length > 0 ? multi.join(', ') : singleStore}
+                    storeName={multi && multi.length > 0 ? multi : singleStore}
                   />
                 </div>
               )

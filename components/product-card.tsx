@@ -17,11 +17,29 @@ export interface Product {
 interface ProductCardProps {
   product: Product
   categoryName?: string
-  storeName?: string
+  storeName?: string | string[]
   onAdd?: (product: Product) => void
 }
 
+function getStorePillClasses(name: string): string {
+  const key = name.toLowerCase()
+  if (key.includes('coop')) {
+    return 'bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300'
+  }
+  if (key.includes('rimi')) {
+    return 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
+  }
+  if (key.includes('selver')) {
+    return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'
+  }
+  return 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+}
+
 export function ProductCard({ product, categoryName, storeName, onAdd }: ProductCardProps) {
+  const storeLabels = React.useMemo(() => {
+    if (!storeName) return [] as string[]
+    return Array.isArray(storeName) ? storeName : [storeName]
+  }, [storeName])
   const price = new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: 'EUR',
@@ -51,9 +69,9 @@ export function ProductCard({ product, categoryName, storeName, onAdd }: Product
         </div>
 
         <Button
-          variant="default"
+          variant="outline"
           size="icon"
-          className="absolute top-3 right-3 rounded-full shadow-md bg-green-500 hover:bg-green-600 text-white border-2 border-white dark:border-neutral-900"
+          className="absolute top-3 right-3 rounded-full border-2 border-emerald-500 text-emerald-500 bg-white/90 hover:bg-emerald-500 hover:text-white shadow-sm dark:bg-neutral-900/80 dark:hover:bg-emerald-500"
           onClick={e => {
             e.stopPropagation()
             onAdd?.(product)
@@ -70,18 +88,23 @@ export function ProductCard({ product, categoryName, storeName, onAdd }: Product
           <div className="flex items-center justify-between mb-1">
             <span className="text-sky-500 font-semibold text-base">{price}</span>
 
-            {(categoryName || storeName) && (
+            {(categoryName || storeLabels.length > 0) && (
               <div className="flex gap-1">
                 {categoryName && (
                   <span className="px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 text-xs font-medium whitespace-nowrap">
                     {categoryName}
                   </span>
                 )}
-                {storeName && (
-                  <span className="px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium whitespace-nowrap">
-                    {storeName}
+                {storeLabels.map(name => (
+                  <span
+                    key={name}
+                    className={`px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ${getStorePillClasses(
+                      name
+                    )}`}
+                  >
+                    {name}
                   </span>
-                )}
+                ))}
               </div>
             )}
           </div>
