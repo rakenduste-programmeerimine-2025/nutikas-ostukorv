@@ -34,8 +34,7 @@ export default function SearchableProductGrid({
               <ProductCard
                 product={p}
                 categoryName={categoryName}
-                storeNames={multi}
-                storeName={!multi || multi.length === 0 ? singleStore : undefined}
+                storeName={multi?.[0] || singleStore}
               />
             </div>
           )

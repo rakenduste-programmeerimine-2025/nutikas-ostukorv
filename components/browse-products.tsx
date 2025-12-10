@@ -159,8 +159,7 @@ export default function BrowseProducts() {
                   <ProductCard
                     product={p}
                     categoryName={categoriesMap[String((p as any).category_id)]?.name}
-                    storeNames={multi}
-                    storeName={!multi || multi.length === 0 ? singleStore : undefined}
+                    storeName={multi && multi.length > 0 ? multi.join(', ') : singleStore}
                   />
                 </div>
               )
@@ -207,10 +206,7 @@ export default function BrowseProducts() {
         </div>
       )}
 
-      <ProductInfoModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-      />
+      <ProductInfoModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
     </div>
   )
 }
