@@ -86,7 +86,7 @@ export function ProductCard({ product, categoryName, storeName, onAdd }: Product
             )}
           </div>
 
-          <div className="mt-1 text-lg font-bold line-clamp-2 text-foreground">
+          <div className="mt-1 text-lg font-bold line-clamp-2 min-h-[3.5rem] text-foreground">
             {product.name}
           </div>
         </div>
