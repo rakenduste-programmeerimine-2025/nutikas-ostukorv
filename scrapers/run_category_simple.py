@@ -30,17 +30,17 @@ CONFIG: Dict[str, Any] = {
         "Coop": {
             "enabled": True,
             "scraper": "coop",
-            "url": "https://coophaapsalu.ee/tootekategooria/pagaritooted/saiad/",
+            "url": "https://coophaapsalu.ee/tootekategooria/pagaritooted/leivad/",
         },
         "Rimi": {
-            "enabled": True,
+            "enabled": False,
             "scraper": "rimi",
             "url": "https://www.rimi.ee/epood/ee/tooted/leivad-saiad-kondiitritooted/c/SH-6",
         },
         "Selver": {
             "enabled": True,
             "scraper": "selver",
-            "url": "https://www.selver.ee/leivad-saiad-kondiitritooted/leivad",
+            "url": "https://www.selver.ee/leivad-saiad-kondiitritooted/saiad",
         },
     },
 }
