@@ -15,12 +15,10 @@ export default async function Home() {
     supabase.from('store').select('*'),
   ])
 
-  // Derive a few Santa Maria maitseained that appear in all three stores
   let santaCrossStore: any[] = []
 
   if (allProducts && stores) {
-    const lowerName = (s: string | null | undefined) =>
-      (s ?? '').toString().toLowerCase()
+    const lowerName = (s: string | null | undefined) => (s ?? '').toString().toLowerCase()
 
     const coopStore = stores.find((s: any) => lowerName(s.name).includes('coop'))
     const rimiStore = stores.find((s: any) => lowerName(s.name).includes('rimi'))
@@ -111,10 +109,9 @@ export default async function Home() {
                 "url('https://www.shutterstock.com/image-photo/blurred-image-shows-interior-supermarket-260nw-2654524783.jpg')",
             }}
           />
-
           <div className="absolute inset-0 bg-white/70 dark:bg-black/60" />
 
-          <div className="relative max-w-5xl mx-auto px-6 text-center">
+          <div className="relative max-w-screen-xl mx-auto px-6 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-5">Leia parimad tooted kiirelt</h1>
             <p className="text-muted-foreground max-w-4xl mx-auto">
               Otsi ja lisa tooted ostukorvi. Kasuta otsingut üleval või sirvi kategooriaid allpool.
@@ -122,7 +119,7 @@ export default async function Home() {
           </div>
         </header>
 
-        <div className="w-full max-w-5xl p-6 mx-auto flex flex-col items-center gap-12">
+        <div className="w-full max-w-screen-xl p-6 mx-auto flex flex-col items-center gap-12">
           <PillsNav active="Otsing" />
 
           <section className="w-full">
@@ -141,7 +138,7 @@ export default async function Home() {
                     name: 'Köögiviljad',
                     slug: 'koogiviljad',
                     image:
-                      'https://images.delfi.ee/media-api-image-cropper/v1/b8fb1020-b7e4-11eb-b469-85a469adc0e4.jpg?noup&w=1200&h=711&ch=0.8065&cw=1&cx=0&cy=0.0224&r=16:9',
+                      'https://images.delfi.ee/media-api-image-cropper/v1/b8fb1020-b7e4-11eb-b469-85a469adc0e4.jpg?noup&w=1200&h=711',
                   },
                   {
                     name: 'Puuviljad',
@@ -165,7 +162,7 @@ export default async function Home() {
                     name: 'Külmutatud',
                     slug: 'kulmutatud',
                     image:
-                      'https://cool-simple.com/cdn/shop/articles/88b703198fe3ad51308b02c2d9b2f7a6_6ffe6823-51df-4310-8ba5-89c25452ec02.jpg?v=1757623997&width=1200',
+                      'https://cool-simple.com/cdn/shop/articles/88b703198fe3ad51308b02c2d9b2f7a6_6ffe6823-51df-4310-8ba5-89c25452ec02.jpg',
                   },
                   {
                     name: 'Pagaritooted',
@@ -176,8 +173,7 @@ export default async function Home() {
                   {
                     name: 'Maiustused',
                     slug: 'maiustused',
-                    image:
-                      'https://www.sweets4me.co.uk/cdn/shop/collections/traditionalloose.jpg?v=1634895788',
+                    image: 'https://www.sweets4me.co.uk/cdn/shop/collections/traditionalloose.jpg',
                   },
                   {
                     name: 'Snäkid',
@@ -195,7 +191,7 @@ export default async function Home() {
                     name: 'Kuivained',
                     slug: 'kuivained',
                     image:
-                      'https://images.delfi.ee/media-api-image-cropper/v1/450f3675-3896-4106-8b9d-4fc642c97cd7.jpg?noup&w=1200&h=711&ch=0.8438&cw=1&cx=0&cy=0.1029&r=16:9',
+                      'https://images.delfi.ee/media-api-image-cropper/v1/450f3675-3896-4106-8b9d-4fc642c97cd7.jpg',
                   },
                   {
                     name: 'Kastmed',
@@ -206,15 +202,14 @@ export default async function Home() {
                 ].map((cat, i) => (
                   <Link key={i} href={`/category/${cat.slug}`}>
                     <Card className="min-w-[200px] cursor-pointer hover:shadow-xl transition transform hover:-translate-y-1">
-                      <div className="h-40 bg-muted-foreground/20 rounded-t-xl overflow-hidden flex items-center justify-center">
+                      <div className="h-40 bg-muted-foreground/20 rounded-t-xl overflow-hidden">
                         <img
                           src={cat.image}
                           alt={cat.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
-
-                      <CardContent className="flex flex-col items-center justify-center py-4">
+                      <CardContent className="py-4">
                         <CardTitle className="text-center">{cat.name}</CardTitle>
                       </CardContent>
                     </Card>
@@ -226,9 +221,7 @@ export default async function Home() {
 
           <section className="w-full mt-2">
             <h3 className="text-center text-2xl mb-6 font-semibold">Populaarsed tooted</h3>
-            <div className="w-full">
-              <ProductModalWrapper extraSantaProducts={santaCrossStore as any} />
-            </div>
+            <ProductModalWrapper extraSantaProducts={santaCrossStore as any} />
           </section>
         </div>
       </div>
