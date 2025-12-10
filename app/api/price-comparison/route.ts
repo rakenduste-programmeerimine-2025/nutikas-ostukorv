@@ -118,6 +118,38 @@ export async function GET(req: Request) {
       return null
     })()
 
+    function isSameLogicalItem(other: ProductRow): boolean {
+      // 1) If global_product_id matches, treat as the exact same SKU.
+      if (baseGlobalId != null && other.global_product_id === baseGlobalId) {
+        return true
+      }
+
+      const name = String(other.name ?? '').toLowerCase()
+      const otherCoreKey = extractCoreKey(name)
+
+      if (!baseCoreKey || !otherCoreKey) return false
+      if (baseCoreKey !== otherCoreKey) return false
+
+      // Require same quantity unit when both present.
+      if (baseQuantityUnit && other.quantity_unit && other.quantity_unit !== baseQuantityUnit) {
+        return false
+      }
+
+      const otherQtyVal = other.quantity_value as number | null
+      if (
+        baseQuantityValue != null &&
+        otherQtyVal != null &&
+        baseQuantityValue > 0 &&
+        otherQtyVal > 0
+      ) {
+        const relDiff = Math.abs(baseQuantityValue - otherQtyVal) / baseQuantityValue
+        // Stricter threshold than similarity scoring.
+        if (relDiff > 0.05) return false
+      }
+
+      return true
+    }
+
     function isReasonableCandidate(other: ProductRow): boolean {
       // If global_product_id matches, always allow.
       if (baseGlobalId != null && other.global_product_id === baseGlobalId) {
@@ -232,6 +264,7 @@ export async function GET(req: Request) {
           pricePerUnit,
           price,
           similarity: similarityScore(row),
+          isSameItem: isSameLogicalItem(row),
         }
       })
       .sort((a, b) => {

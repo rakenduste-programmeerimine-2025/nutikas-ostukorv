@@ -29,6 +29,7 @@ function createGenericHelpers(): TextMatchingHelpers {
 // Import per-category helpers. Each category keeps its own matching rules
 // close to its data/migrations under lib/product-category/<slug>/.
 import { createMaitseainedTextMatchingHelpers } from '@/lib/product-category/maitseained/product-matching'
+import { createPagaritootedTextMatchingHelpers } from '@/lib/product-category/pagaritooted/product-matching'
 
 /**
  * Get text-matching helpers for a given category slug.
@@ -46,6 +47,8 @@ export function getTextMatchingHelpersForCategorySlug(
   switch (slug) {
     case 'maitseained':
       return createMaitseainedTextMatchingHelpers()
+    case 'pagaritooted':
+      return createPagaritootedTextMatchingHelpers()
     default:
       return createGenericHelpers()
   }

@@ -3,10 +3,12 @@
 import * as React from 'react'
 import { useCart } from './cart-context'
 import { Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function ShoppingCart() {
   const { items, totalItems, removeItem, updateQty, clear } = useCart()
   const [open, setOpen] = React.useState(false)
+  const router = useRouter()
 
   const [sortBy, setSortBy] = React.useState<
     'price-asc' | 'price-desc' | 'qty-asc' | 'qty-desc' | 'none'
@@ -38,7 +40,6 @@ export default function ShoppingCart() {
     )
 
     const totalBlock = `\r\nKokku: ${totalPrice.toFixed(2)} €`
-
     const text = lines.join('') + totalBlock
 
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
@@ -144,6 +145,18 @@ export default function ShoppingCart() {
           <div className="mt-3 flex items-center justify-between">
             <div className="font-semibold">Kokku</div>
             <div className="font-semibold">{totalPrice.toFixed(2)} €</div>
+          </div>
+
+          <div className="mt-3">
+            <button
+              onClick={() => {
+                setOpen(false)
+                router.push('/cart')
+              }}
+              className="w-full px-3 py-2 rounded bg-foreground text-background hover:opacity-90"
+            >
+              Detailsem vaade
+            </button>
           </div>
 
           <div className="mt-3">
