@@ -2,8 +2,9 @@
 
 import * as React from 'react'
 import { useCart } from './cart-context'
-import { Trash2 } from 'lucide-react'
+import { Trash2, ShoppingCart as CartIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
 
 export default function ShoppingCart() {
   const { items, totalItems, removeItem, updateQty, clear } = useCart()
@@ -60,37 +61,43 @@ export default function ShoppingCart() {
   return (
     <div className="fixed top-6 right-6 z-50">
       <div className="flex items-center gap-2">
-        <button
-          className="relative px-3 py-2 2xl:px-4 2xl:py-2.5 rounded-md bg-foreground text-background text-sm 2xl:text-base"
+        <Button
+          variant="default"
+          size="lg"
+          className="relative shadow-sm"
           onClick={() => setOpen(s => !s)}
           aria-label="Toggle cart"
         >
+          <CartIcon className="mr-2 h-6 w-6" />
           Ostukorv
           {totalItems > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 2xl:w-7 2xl:h-7 flex items-center justify-center text-xs 2xl:text-sm">
+            <span className="ml-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-semibold text-white">
               {totalItems}
             </span>
           )}
-        </button>
+        </Button>
       </div>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[28rem] 2xl:w-[32rem] bg-background border rounded shadow-lg p-4 2xl:p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-base 2xl:text-lg">Ostukorv</h4>
+        <div className="absolute right-0 mt-2 w-[28rem] rounded-xl border border-border bg-card/95 p-4 text-sm shadow-xl backdrop-blur">
+          <div className="mb-4 flex items-center justify-between">
+            <h4 className="text-sm font-semibold tracking-tight">Ostukorv</h4>
 
-            <button
-              className="flex items-center gap-1 text-sm 2xl:text-base text-foreground hover:text-red-500/80"
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive"
               onClick={clear}
             >
-              <Trash2 className="w-4 h-4 2xl:w-5 2xl:h-5" />
+              <Trash2 className="h-4 w-4" />
               Tühjenda
-            </button>
+            </Button>
           </div>
 
           <div className="mb-3 grid grid-cols-1 gap-2">
             <select
-              className="border rounded px-2 py-1 text-sm 2xl:text-base"
+              className="h-8 rounded-md border border-border bg-background/80 px-2 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/60"
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
             >
@@ -102,30 +109,30 @@ export default function ShoppingCart() {
             </select>
           </div>
 
-          <div className="max-h-72 2xl:max-h-80 overflow-auto">
+          <div className="max-h-72 space-y-1 overflow-auto">
             {sortedItems.length === 0 && (
-              <div className="text-sm text-muted-foreground">
-                Ostukorv on tühi
-              </div>
+              <div className="text-xs text-muted-foreground">Ostukorv on tühi</div>
             )}
 
             {sortedItems.map(it => (
               <div
                 key={it.product.id}
-                className="flex items-center gap-3 py-2 border-b last:border-b-0"
+                className="flex items-center gap-3 border-b border-border/60 py-2 last:border-b-0"
               >
-                <img
-                  src={it.product.image_url || '/placeholder.png'}
-                  alt={it.product.name}
-                  className="w-12 h-12 2xl:w-14 2xl:h-14 object-cover rounded border"
-                />
+                <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded border bg-white">
+                  <img
+                    src={it.product.image_url || '/placeholder.png'}
+                    alt={it.product.name}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
 
-                <div className="flex-1">
-                  <div className="font-medium text-sm 2xl:text-base">
+                <div className="flex-1 min-w-0">
+                  <div className="truncate text-sm font-medium leading-snug">
                     {it.product.name}
                   </div>
-                  <div className="text-sm 2xl:text-base text-muted-foreground">
-                    {Number(it.product.price).toFixed(2)} €
+                  <div className="text-xs text-muted-foreground">
+                    {Number(it.product.price).toFixed(2)} € / tk
                   </div>
                 </div>
 
@@ -134,7 +141,7 @@ export default function ShoppingCart() {
                     type="number"
                     min={1}
                     value={String(it.quantity)}
-                    className="w-14 2xl:w-16 border rounded px-2 py-1 text-sm 2xl:text-base"
+                    className="h-8 w-16 rounded-md border border-border bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/60"
                     onChange={e =>
                       updateQty(
                         it.product.id,
@@ -142,52 +149,53 @@ export default function ShoppingCart() {
                       )
                     }
                   />
-                  <button
-                    className="text-sm 2xl:text-base text-foreground hover:text-red-500/80"
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="px-1 text-xs text-muted-foreground hover:text-destructive"
                     onClick={() => removeItem(it.product.id)}
                   >
                     Eemalda
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-3 flex items-center justify-between">
-            <div className="font-semibold text-base 2xl:text-lg">Kokku</div>
-            <div className="font-semibold text-base 2xl:text-lg">
-              {totalPrice.toFixed(2)} €
-            </div>
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <div className="text-muted-foreground">Kokku</div>
+            <div className="font-semibold">{totalPrice.toFixed(2)} €</div>
           </div>
 
-          <div className="mt-3">
-            <button
+          <div className="mt-4 space-y-3">
+            <Button
+              className="w-full"
               onClick={() => {
                 setOpen(false)
                 router.push('/cart')
               }}
-              className="w-full px-3 py-2 2xl:py-2.5 rounded bg-foreground text-background text-sm 2xl:text-base hover:opacity-90"
             >
               Detailsem vaade
-            </button>
-          </div>
+            </Button>
 
-          <div className="mt-3">
-            <button
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
               onClick={exportList}
-              className="w-full px-3 py-2 2xl:py-2.5 bg-blue-600 text-white rounded text-sm 2xl:text-base hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
             >
               Ostunimekirja eksport
-            </button>
-          </div>
+            </Button>
 
-          <div className="mt-2">
-            <button
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full text-xs text-muted-foreground"
               onClick={() => setOpen(false)}
-              className="w-full px-3 py-2 2xl:py-2.5 rounded border border-muted-foreground text-muted-foreground text-sm 2xl:text-base hover:bg-muted/20"
             >
               Sulge
-            </button>
+            </Button>
           </div>
         </div>
       )}
