@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import FilterBar from '@/components/ui/category-filter-bar'
 import SearchableProductGrid from '@/components/searchable-product-grid'
 import ProductInfoModal from '@/components/ui/product-info-modal'
 import type { Product as CardProduct } from '@/components/product-card'
+import { groupProducts, type AnyProduct, type ProductGroup } from '@/lib/product-grouping'
 
 type Store = {
   id: string | number
@@ -12,13 +13,17 @@ type Store = {
   [key: string]: unknown
 }
 
+interface CategoryProductBrowserProps {
+  products: CardProduct[]
+  stores: Store[]
+  categories: any[]
+}
+
 export default function CategoryProductBrowser({
   products,
   stores,
-}: {
-  products: CardProduct[]
-  stores: Store[]
-}) {
+  categories,
+}: CategoryProductBrowserProps) {
   const [selectedStore, setSelectedStore] = useState<string | null>(null)
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
@@ -27,18 +32,64 @@ export default function CategoryProductBrowser({
   const [selectedProduct, setSelectedProduct] = useState<CardProduct | null>(null)
   const [page, setPage] = useState(1)
 
-  const filteredAll = products
-    .filter(p => (selectedStore ? String(p.store_id) === selectedStore : true))
-    .filter(p => (minPrice ? Number(p.price) >= Number(minPrice) : true))
-    .filter(p => (maxPrice ? Number(p.price) <= Number(maxPrice) : true))
-    .sort((a, b) => {
-      if (sort === 'price_asc') return Number(a.price) - Number(b.price)
-      if (sort === 'price_desc') return Number(b.price) - Number(a.price)
-      return 0
-    })
+  const groups: ProductGroup[] = useMemo(
+    () => groupProducts(products as AnyProduct[], categories),
+    [products, categories]
+  )
+
+  const filteredAll = useMemo(() => {
+    const meetsPrice = (p: AnyProduct): boolean => {
+      const price = Number((p as any).price)
+      if (!Number.isFinite(price)) return false
+      if (minPrice && price < Number(minPrice)) return false
+      if (maxPrice && price > Number(maxPrice)) return false
+      return true
+    }
+
+    const meetsStore = (p: AnyProduct): boolean => {
+      if (!selectedStore) return true
+      return String(p.store_id) === selectedStore
+    }
+
+    return groups
+      .filter(g => g.items.some(p => meetsStore(p) && meetsPrice(p)))
+      .sort((a, b) => {
+        const metric = (x: ProductGroup): number => {
+          const rep = x.representative as any
+          const ppu = rep.price_per_unit as number | null
+          const price = rep.price as number | null
+          const n = (ppu ?? price) ?? Number.POSITIVE_INFINITY
+          return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY
+        }
+
+        const am = metric(a)
+        const bm = metric(b)
+
+        if (sort === 'price_desc') return bm - am
+        // default price_asc
+        return am - bm
+      })
+  }, [groups, selectedStore, minPrice, maxPrice, sort])
 
   const totalPages = Math.max(1, Math.ceil(filteredAll.length / limit))
-  const filtered = filteredAll.slice((page - 1) * limit, page * limit)
+  const pageGroups = filteredAll.slice((page - 1) * limit, page * limit)
+  const pageProducts = pageGroups.map(g => g.representative as CardProduct)
+
+  const storeNamesByProductId = useMemo(() => {
+    const map: Record<string, string[]> = {}
+    const nameMap = Object.fromEntries(stores.map(s => [String(s.id), s.name]))
+    for (const g of pageGroups) {
+      const names = Array.from(
+        new Set(
+          g.items
+            .map(p => nameMap[String(p.store_id)] as string | undefined)
+            .filter((n): n is string => Boolean(n))
+        )
+      )
+      map[String((g.representative as any).id)] = names
+    }
+    return map
+  }, [pageGroups, stores])
 
   function goto(p: number) {
     setPage(Math.min(Math.max(1, p), totalPages))
@@ -84,9 +135,10 @@ export default function CategoryProductBrowser({
       />
 
       <SearchableProductGrid
-        categoryName=""
-        products={filtered}
+        categoryName={''}
+        products={pageProducts}
         storesMap={Object.fromEntries(stores.map(s => [String(s.id), s]))}
+        storeNamesByProductId={storeNamesByProductId}
         onSelectProduct={setSelectedProduct}
       />
 

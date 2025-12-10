@@ -38,7 +38,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         <div className="w-full max-w-5xl p-6 flex flex-col items-center gap-12">
           <h1 className="text-3xl font-bold mb-4">{category.name}</h1>
 
-          <CategoryProductBrowser products={products ?? []} stores={stores ?? []} />
+          <CategoryProductBrowser
+            products={products ?? []}
+            stores={stores ?? []}
+            categories={[category]}
+          />
         </div>
       </div>
     </main>

@@ -4,6 +4,7 @@ import * as React from 'react'
 import ProductCard, { Product } from './product-card'
 import FilterBar from './ui/filter-bar'
 import ProductInfoModal from '@/components/ui/product-info-modal'
+import { groupProducts, type AnyProduct, type ProductGroup } from '@/lib/product-grouping'
 
 export default function BrowseProducts() {
   const [page, setPage] = React.useState(1)
@@ -58,6 +59,32 @@ export default function BrowseProducts() {
 
   const categoriesMap = Object.fromEntries((categories ?? []).map((c: any) => [String(c.id), c]))
   const storesMap = Object.fromEntries((stores ?? []).map((s: any) => [String(s.id), s]))
+
+  // Group products per page so the grid does not show duplicates across stores.
+  const pageGroups: ProductGroup[] = React.useMemo(() => {
+    return groupProducts(products as AnyProduct[], categories)
+  }, [products, categories])
+
+  const pageProducts: Product[] = React.useMemo(
+    () => pageGroups.map(g => g.representative as Product),
+    [pageGroups]
+  )
+
+  const storeNamesByProductId: Record<string, string[]> = React.useMemo(() => {
+    const map: Record<string, string[]> = {}
+    const nameMap = Object.fromEntries((stores ?? []).map((s: any) => [String(s.id), s.name]))
+    for (const g of pageGroups) {
+      const names = Array.from(
+        new Set(
+          g.items
+            .map(p => nameMap[String(p.store_id)] as string | undefined)
+            .filter((n): n is string => Boolean(n))
+        )
+      )
+      map[String((g.representative as any).id)] = names
+    }
+    return map
+  }, [pageGroups, stores])
 
   function goto(p: number) {
     setPage(Math.min(Math.max(1, p), totalPages))
@@ -118,19 +145,26 @@ export default function BrowseProducts() {
           ? Array.from({ length: limit }).map((_, i) => (
               <div key={i} className="h-40 bg-muted-foreground/20 rounded" />
             ))
-          : products.map(p => (
-              <div
-                key={p.id}
-                onClick={() => setSelectedProduct(p)}
-                className="cursor-pointer min-h-[320px] flex"
-              >
-                <ProductCard
-                  product={p}
-                  categoryName={categoriesMap[String((p as any).category_id)]?.name}
-                  storeName={storesMap[String((p as any).store_id)]?.name}
-                />
-              </div>
-            ))}
+          : pageProducts.map(p => {
+              const pid = String(p.id)
+              const multi = storeNamesByProductId[pid]
+              const singleStore = storesMap[String((p as any).store_id)]?.name
+
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => setSelectedProduct(p)}
+                  className="cursor-pointer min-h-[320px] flex"
+                >
+                  <ProductCard
+                    product={p}
+                    categoryName={categoriesMap[String((p as any).category_id)]?.name}
+                    storeNames={multi}
+                    storeName={!multi || multi.length === 0 ? singleStore : undefined}
+                  />
+                </div>
+              )
+            })}
       </div>
 
       {totalPages > 1 && (
