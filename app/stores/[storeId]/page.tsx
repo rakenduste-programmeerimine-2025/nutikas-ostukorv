@@ -72,7 +72,7 @@ export default async function StorePage({ params }: StorePageProps) {
       <div className="relative min-h-screen flex flex-col items-center bg-background/80 backdrop-blur-sm">
         <div className="flex-1 w-full flex flex-col gap-6 items-center">
           <Navbar right={<AuthButton />} />
-          <PillsNav active="Poenimekiri" />
+          <PillsNav active="Poed" />
 
           <section className="w-full max-w-5xl p-6 flex flex-col gap-8">
             <header className="flex flex-col gap-2">
