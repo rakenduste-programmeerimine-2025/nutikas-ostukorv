@@ -10,16 +10,8 @@ export default async function Page() {
   const { data: allProducts } = await supabase.from('product').select('*')
 
   return (
-    <main className="min-h-screen relative">
-      <div
-        className="fixed inset-0 bg-center bg-cover bg-no-repeat"
-        style={{
-          backgroundImage:
-            "url('https://png.pngtree.com/thumb_back/fh260/background/20240612/pngtree-convenience-store-shelves-interior-blur-background-with-empty-supermarket-shopping-cart-image_15748275.jpg')",
-        }}
-      />
-
-      <div className="relative min-h-screen flex flex-col items-center bg-background/80 backdrop-blur-sm">
+    <main className="min-h-screen relative bg-gray-100 dark:bg-background">
+      <div className="relative min-h-screen flex flex-col items-center">
         <Navbar
           right={<AuthButton />}
           globalSearch={<HomeClientWrapper allProducts={allProducts || []} />}
