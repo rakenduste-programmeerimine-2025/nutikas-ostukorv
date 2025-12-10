@@ -14,7 +14,10 @@ export default function ShoppingCart() {
     'price-asc' | 'price-desc' | 'qty-asc' | 'qty-desc' | 'none'
   >('none')
 
-  const totalPrice = items.reduce((sum, it) => sum + Number(it.product.price) * it.quantity, 0)
+  const totalPrice = items.reduce(
+    (sum, it) => sum + Number(it.product.price) * it.quantity,
+    0
+  )
 
   const sortedItems = React.useMemo(() => {
     const copy = [...items]
@@ -36,7 +39,8 @@ export default function ShoppingCart() {
 
   function exportList() {
     const lines = items.map(
-      it => `${it.product.name} - ${Number(it.product.price).toFixed(2)} € x ${it.quantity}\r\n\r\n`
+      it =>
+        `${it.product.name} - ${Number(it.product.price).toFixed(2)} € x ${it.quantity}\r\n\r\n`
     )
 
     const totalBlock = `\r\nKokku: ${totalPrice.toFixed(2)} €`
@@ -57,13 +61,13 @@ export default function ShoppingCart() {
     <div className="fixed top-6 right-6 z-50">
       <div className="flex items-center gap-2">
         <button
-          className="relative px-3 py-2 rounded-md bg-foreground text-background"
+          className="relative px-3 py-2 2xl:px-4 2xl:py-2.5 rounded-md bg-foreground text-background text-sm 2xl:text-base"
           onClick={() => setOpen(s => !s)}
           aria-label="Toggle cart"
         >
           Ostukorv
           {totalItems > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 2xl:w-7 2xl:h-7 flex items-center justify-center text-xs 2xl:text-sm">
               {totalItems}
             </span>
           )}
@@ -71,22 +75,22 @@ export default function ShoppingCart() {
       </div>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[28rem] bg-background border rounded shadow-lg p-4">
+        <div className="absolute right-0 mt-2 w-[28rem] 2xl:w-[32rem] bg-background border rounded shadow-lg p-4 2xl:p-5">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold">Ostukorv</h4>
+            <h4 className="font-semibold text-base 2xl:text-lg">Ostukorv</h4>
 
             <button
-              className="flex items-center gap-1 text-sm text-foreground hover:text-red-500/80"
+              className="flex items-center gap-1 text-sm 2xl:text-base text-foreground hover:text-red-500/80"
               onClick={clear}
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-4 h-4 2xl:w-5 2xl:h-5" />
               Tühjenda
             </button>
           </div>
 
           <div className="mb-3 grid grid-cols-1 gap-2">
             <select
-              className="border rounded px-2 py-1 text-sm"
+              className="border rounded px-2 py-1 text-sm 2xl:text-base"
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
             >
@@ -98,9 +102,11 @@ export default function ShoppingCart() {
             </select>
           </div>
 
-          <div className="max-h-72 overflow-auto">
+          <div className="max-h-72 2xl:max-h-80 overflow-auto">
             {sortedItems.length === 0 && (
-              <div className="text-sm text-muted-foreground">Ostukorv on tühi</div>
+              <div className="text-sm text-muted-foreground">
+                Ostukorv on tühi
+              </div>
             )}
 
             {sortedItems.map(it => (
@@ -111,12 +117,14 @@ export default function ShoppingCart() {
                 <img
                   src={it.product.image_url || '/placeholder.png'}
                   alt={it.product.name}
-                  className="w-12 h-12 object-cover rounded border"
+                  className="w-12 h-12 2xl:w-14 2xl:h-14 object-cover rounded border"
                 />
 
                 <div className="flex-1">
-                  <div className="font-medium">{it.product.name}</div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="font-medium text-sm 2xl:text-base">
+                    {it.product.name}
+                  </div>
+                  <div className="text-sm 2xl:text-base text-muted-foreground">
                     {Number(it.product.price).toFixed(2)} €
                   </div>
                 </div>
@@ -126,13 +134,16 @@ export default function ShoppingCart() {
                     type="number"
                     min={1}
                     value={String(it.quantity)}
-                    className="w-14 border rounded px-2 py-1 text-sm"
+                    className="w-14 2xl:w-16 border rounded px-2 py-1 text-sm 2xl:text-base"
                     onChange={e =>
-                      updateQty(it.product.id, Math.max(1, Number(e.target.value) || 1))
+                      updateQty(
+                        it.product.id,
+                        Math.max(1, Number(e.target.value) || 1)
+                      )
                     }
                   />
                   <button
-                    className="flex items-center gap-1 text-sm text-foreground hover:text-red-500/80"
+                    className="text-sm 2xl:text-base text-foreground hover:text-red-500/80"
                     onClick={() => removeItem(it.product.id)}
                   >
                     Eemalda
@@ -143,8 +154,10 @@ export default function ShoppingCart() {
           </div>
 
           <div className="mt-3 flex items-center justify-between">
-            <div className="font-semibold">Kokku</div>
-            <div className="font-semibold">{totalPrice.toFixed(2)} €</div>
+            <div className="font-semibold text-base 2xl:text-lg">Kokku</div>
+            <div className="font-semibold text-base 2xl:text-lg">
+              {totalPrice.toFixed(2)} €
+            </div>
           </div>
 
           <div className="mt-3">
@@ -153,7 +166,7 @@ export default function ShoppingCart() {
                 setOpen(false)
                 router.push('/cart')
               }}
-              className="w-full px-3 py-2 rounded bg-foreground text-background hover:opacity-90"
+              className="w-full px-3 py-2 2xl:py-2.5 rounded bg-foreground text-background text-sm 2xl:text-base hover:opacity-90"
             >
               Detailsem vaade
             </button>
@@ -162,7 +175,7 @@ export default function ShoppingCart() {
           <div className="mt-3">
             <button
               onClick={exportList}
-              className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              className="w-full px-3 py-2 2xl:py-2.5 bg-blue-600 text-white rounded text-sm 2xl:text-base hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
             >
               Ostunimekirja eksport
             </button>
@@ -171,7 +184,7 @@ export default function ShoppingCart() {
           <div className="mt-2">
             <button
               onClick={() => setOpen(false)}
-              className="w-full px-3 py-2 rounded border border-muted-foreground text-muted-foreground hover:bg-muted/20"
+              className="w-full px-3 py-2 2xl:py-2.5 rounded border border-muted-foreground text-muted-foreground text-sm 2xl:text-base hover:bg-muted/20"
             >
               Sulge
             </button>

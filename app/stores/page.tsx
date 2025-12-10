@@ -21,7 +21,10 @@ function getStoreLogo(name: string | null): string | undefined {
 
 export default async function StoresPage() {
   const supabase = await createClient()
-  const { data: stores, error } = await supabase.from('store').select('*').order('name')
+  const { data: stores, error } = await supabase
+    .from('store')
+    .select('*')
+    .order('name')
 
   if (error) {
     console.error('Error loading stores:', error)
@@ -46,7 +49,7 @@ export default async function StoresPage() {
             Poed, mille tootevalik on leitav meie lehelt:
           </h2>
 
-          <div className="w-full max-w-xl px-5 flex flex-col gap-4">
+          <div className="w-full max-w-3xl px-5 flex flex-col gap-5">
             {(stores ?? []).map(store => {
               const name = store.name ?? ''
               const logo = getStoreLogo(name)
@@ -57,7 +60,7 @@ export default async function StoresPage() {
               const isSelver = lowerName.includes('selver')
 
               const logoWrapperClasses = [
-                'flex h-16 w-32 items-center justify-center rounded-lg overflow-hidden',
+                'flex h-20 w-40 items-center justify-center rounded-lg overflow-hidden',
                 isCoop || isSelver ? 'bg-white' : 'bg-muted',
               ].join(' ')
 
@@ -71,16 +74,25 @@ export default async function StoresPage() {
 
               return (
                 <Link key={store.id} href={`/stores/${store.id}`} className="block">
-                  <div className="flex items-center gap-5 rounded-2xl border bg-card px-6 py-5 cursor-pointer hover:bg-muted/70 transition-colors">
+                  <div className="flex items-center gap-6 rounded-2xl border bg-card px-8 py-6 cursor-pointer hover:bg-muted/70 transition-colors">
                     <div className={logoWrapperClasses}>
                       {logo ? (
-                        <img src={logo} alt={name || 'Pood'} className={logoImgClasses} />
+                        <img
+                          src={logo}
+                          alt={name || 'Pood'}
+                          className={logoImgClasses}
+                        />
                       ) : (
-                        <span className="text-lg font-semibold">{name[0] ?? '?'}</span>
+                        <span className="text-xl font-semibold">
+                          {name[0] ?? '?'}
+                        </span>
                       )}
                     </div>
+
                     <div className="flex flex-col">
-                      <span className="text-lg font-medium leading-none">{name}</span>
+                      <span className="text-xl font-medium leading-none">
+                        {name}
+                      </span>
                       <span className="text-sm text-muted-foreground mt-1">
                         Vaata poe tooteid ja hindu
                       </span>
