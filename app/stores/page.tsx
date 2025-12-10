@@ -40,7 +40,7 @@ export default async function StoresPage() {
       <div className="relative min-h-screen flex flex-col items-center bg-background/80 backdrop-blur-sm">
         <div className="flex-1 w-full flex flex-col gap-6 items-center">
           <Navbar right={<AuthButton />} />
-          <PillsNav active="Poenimekiri" />
+          <PillsNav active="Poed" />
 
           <h2 className="text-center text-3xl mb-10">
             Poed, mille tootevalik on leitav meie lehelt:

@@ -1,13 +1,13 @@
 import Link from 'next/link'
 
 type PillsNavProps = {
-  active: 'Andmed' | 'Poenimekiri' | 'Otsing' | 'Tooted'
+  active: 'Poed' | 'Otsing' | 'Tooted'
 }
 
 export default function PillsNav({ active }: PillsNavProps) {
   const links = [
-    { href: '/data', label: 'Andmed' },
-    { href: '/stores', label: 'Poenimekiri' },
+    //{ href: '/data', label: 'Andmed' },
+    { href: '/stores', label: 'Poed' },
     { href: '/', label: 'Otsing' },
     { href: '/browse', label: 'Tooted' },
   ]
