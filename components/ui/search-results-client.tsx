@@ -49,10 +49,7 @@ export default function SearchResultsClient({
 
   const totalPages = Math.max(1, Math.ceil(filteredAll.length / limit))
 
-  const visible = filteredAll.slice(
-    (page - 1) * limit,
-    page * limit
-  )
+  const visible = filteredAll.slice((page - 1) * limit, page * limit)
 
   function goto(p: number) {
     setPage(Math.min(Math.max(1, p), totalPages))
@@ -106,14 +103,16 @@ export default function SearchResultsClient({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {visible.map(p => (
-          <div key={p.id} className="transition hover:scale-[1.01]">
-            <div onClick={() => setSelectedProduct(p)}>
-              <ProductCard
-                product={p}
-                categoryName={categoriesMap[String(p.category_id)]}
-                storeName={storesMap[String(p.store_id)]}
-              />
-            </div>
+          <div
+            key={p.id}
+            className="cursor-pointer transition hover:scale-[1.01]"
+            onClick={() => setSelectedProduct(p)}
+          >
+            <ProductCard
+              product={p}
+              categoryName={categoriesMap[String(p.category_id)]}
+              storeName={storesMap[String(p.store_id)]}
+            />
           </div>
         ))}
       </div>
@@ -158,10 +157,7 @@ export default function SearchResultsClient({
         </div>
       )}
 
-      <ProductInfoModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-      />
+      <ProductInfoModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
     </div>
   )
 }

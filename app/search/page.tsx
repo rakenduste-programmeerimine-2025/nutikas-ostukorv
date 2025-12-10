@@ -2,16 +2,16 @@ import Navbar from '@/components/ui/navbar'
 import PillsNav from '@/components/ui/pills-nav'
 import { createClient } from '@/lib/supabase/server'
 import { AuthButton } from '@/components/auth-button'
-// ProductCard is rendered inside the client wrapper
-import Link from 'next/link'
 import SearchResultsClient from '@/components/ui/search-results-client'
+import HomeClientWrapper from '@/components/home-client-wrapper'
 
 export default async function SearchPage({ searchParams }: { searchParams: any }) {
-  // `searchParams` can be a Promise in some Next.js setups — await it to be safe
   const resolvedParams = await searchParams
   const query = (resolvedParams?.query as string) || ''
 
   const supabase = await createClient()
+
+  const { data: allProducts } = await supabase.from('product').select('*')
 
   let filteredResults: any[] = []
   let error: any = null
@@ -30,14 +30,26 @@ export default async function SearchPage({ searchParams }: { searchParams: any }
     console.error('Error loading products:', error)
   }
 
-  // fetch categories and stores for filter controls
   const { data: categories } = await supabase.from('category').select('*')
   const { data: stores } = await supabase.from('store').select('*')
 
   return (
-    <main className="min-h-screen flex flex-col items-center bg-background">
-      <div className="w-full">
-        <Navbar right={<AuthButton />} />
+    <main className="min-h-screen relative">
+      <div
+        className="fixed inset-0 bg-center bg-cover bg-no-repeat"
+        style={{
+          backgroundImage:
+            "url('https://png.pngtree.com/thumb_back/fh260/background/20240612/pngtree-convenience-store-shelves-interior-blur-background-with-empty-supermarket-shopping-cart-image_15748275.jpg')",
+        }}
+      />
+
+      <div className="relative min-h-screen flex flex-col items-center bg-background/80 backdrop-blur-sm">
+        <Navbar
+          right={<AuthButton />}
+          globalSearch={
+            <HomeClientWrapper allProducts={allProducts || []} />
+          }
+        />
 
         <div className="w-full max-w-5xl mx-auto p-6">
           <header className="mt-6 mb-8">
@@ -45,7 +57,8 @@ export default async function SearchPage({ searchParams }: { searchParams: any }
               <h1 className="text-3xl font-bold">Otsingu tulemused</h1>
               {query && (
                 <span className="ml-2 px-3 py-1 rounded-full bg-muted/40 text-sm text-muted-foreground">
-                  {filteredResults.length} tulemus{filteredResults.length === 1 ? '' : 'ed'}
+                  {filteredResults.length} tulemus
+                  {filteredResults.length === 1 ? '' : 't'}
                 </span>
               )}
             </div>
