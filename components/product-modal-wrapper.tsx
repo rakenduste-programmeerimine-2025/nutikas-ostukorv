@@ -23,7 +23,7 @@ export default function ProductModalWrapper({
       const { data, error } = await supabase
         .from('product')
         .select('*')
-        .in('id', [133, 214, 15])
+        .in('id', [2001, 2200, 1500])
 
       if (!error && data) {
         // Keep the original three featured products as-is
@@ -31,26 +31,18 @@ export default function ProductModalWrapper({
 
         // Fetch categories and stores referenced by both featured and extra products
         const merged = [...data, ...extraSantaProducts] as any[]
-        const categoryIds = Array.from(
-          new Set(merged.map(p => p.category_id).filter(Boolean))
-        )
+        const categoryIds = Array.from(new Set(merged.map(p => p.category_id).filter(Boolean)))
         const storeIds = Array.from(new Set(merged.map(p => p.store_id).filter(Boolean)))
 
         if (categoryIds.length > 0) {
-          const { data: cats } = await supabase
-            .from('category')
-            .select('*')
-            .in('id', categoryIds)
+          const { data: cats } = await supabase.from('category').select('*').in('id', categoryIds)
           const cmap: Record<string, string> = {}
           ;(cats || []).forEach((c: any) => (cmap[String(c.id)] = c.name))
           setCategoriesMap(cmap)
         }
 
         if (storeIds.length > 0) {
-          const { data: stores } = await supabase
-            .from('store')
-            .select('*')
-            .in('id', storeIds)
+          const { data: stores } = await supabase.from('store').select('*').in('id', storeIds)
           const smap: Record<string, string> = {}
           ;(stores || []).forEach((s: any) => (smap[String(s.id)] = s.name))
           setStoresMap(smap)
@@ -63,9 +55,7 @@ export default function ProductModalWrapper({
 
   const displayProducts: Product[] = [
     ...products,
-    ...extraSantaProducts.filter(
-      p => !products.some(existing => existing.id === p.id)
-    ),
+    ...extraSantaProducts.filter(p => !products.some(existing => existing.id === p.id)),
   ]
 
   return (

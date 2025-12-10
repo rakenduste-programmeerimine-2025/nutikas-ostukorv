@@ -15,7 +15,10 @@ export default function ShoppingCart() {
     'price-asc' | 'price-desc' | 'qty-asc' | 'qty-desc' | 'none'
   >('none')
 
-  const totalPrice = items.reduce((sum, it) => sum + Number(it.product.price) * it.quantity, 0)
+  const totalPrice = items.reduce(
+    (sum, it) => sum + Number(it.product.price) * it.quantity,
+    0
+  )
 
   const sortedItems = React.useMemo(() => {
     const copy = [...items]
@@ -37,7 +40,8 @@ export default function ShoppingCart() {
 
   function exportList() {
     const lines = items.map(
-      it => `${it.product.name} - ${Number(it.product.price).toFixed(2)} € x ${it.quantity}\r\n\r\n`
+      it =>
+        `${it.product.name} - ${Number(it.product.price).toFixed(2)} € x ${it.quantity}\r\n\r\n`
     )
 
     const totalBlock = `\r\nKokku: ${totalPrice.toFixed(2)} €`
@@ -139,7 +143,10 @@ export default function ShoppingCart() {
                     value={String(it.quantity)}
                     className="h-8 w-16 rounded-md border border-border bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/60"
                     onChange={e =>
-                      updateQty(it.product.id, Math.max(1, Number(e.target.value) || 1))
+                      updateQty(
+                        it.product.id,
+                        Math.max(1, Number(e.target.value) || 1)
+                      )
                     }
                   />
                   <Button
