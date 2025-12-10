@@ -38,6 +38,7 @@ export default function SearchResultsClient({
   const [limit, setLimit] = useState(30)
   const [sort, setSort] = useState<string | null>('price_asc')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [page, setPage] = useState(1)
 
   const groups = useMemo(
     () => groupProducts(initialProducts as AnyProduct[], categories),
@@ -89,17 +90,35 @@ export default function SearchResultsClient({
         categories={categories}
         stores={stores}
         selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        onCategoryChange={v => {
+          setSelectedCategory(v)
+          setPage(1)
+        }}
         selectedStore={selectedStore}
-        onStoreChange={setSelectedStore}
+        onStoreChange={v => {
+          setSelectedStore(v)
+          setPage(1)
+        }}
         minPrice={minPrice}
         maxPrice={maxPrice}
-        onMinPriceChange={setMinPrice}
-        onMaxPriceChange={setMaxPrice}
+        onMinPriceChange={v => {
+          setMinPrice(v)
+          setPage(1)
+        }}
+        onMaxPriceChange={v => {
+          setMaxPrice(v)
+          setPage(1)
+        }}
         limit={limit}
-        onLimitChange={setLimit}
+        onLimitChange={n => {
+          setLimit(n)
+          setPage(1)
+        }}
         selectedSort={sort}
-        onSortChange={setSort}
+        onSortChange={v => {
+          setSort(v)
+          setPage(1)
+        }}
         onClear={() => {
           setSelectedCategory(null)
           setSelectedStore(null)
@@ -107,6 +126,7 @@ export default function SearchResultsClient({
           setMaxPrice('')
           setLimit(30)
           setSort('price_asc')
+          setPage(1)
         }}
       />
 
@@ -146,6 +166,46 @@ export default function SearchResultsClient({
           )
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <button
+            onClick={() => goto(page - 1)}
+            disabled={page === 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Eelmine
+          </button>
+
+          <div className="flex items-center gap-2">
+            {Array.from({ length: Math.min(7, totalPages) }).map((_, i) => {
+              const start = Math.max(1, Math.min(page - 3, totalPages - 6))
+              const p = start + i
+              if (p > totalPages) return null
+
+              return (
+                <button
+                  key={p}
+                  onClick={() => goto(p)}
+                  className={`px-3 py-1 border rounded ${
+                    p === page ? 'bg-foreground text-background' : ''
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            })}
+          </div>
+
+          <button
+            onClick={() => goto(page + 1)}
+            disabled={page === totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Järgmine
+          </button>
+        </div>
+      )}
 
       <ProductInfoModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
     </div>
