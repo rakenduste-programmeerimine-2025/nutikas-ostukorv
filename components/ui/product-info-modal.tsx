@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { Product } from '@/components/product-card'
 import { useCart } from '@/components/cart/cart-context'
 import { Button } from '@/components/ui/button'
 
@@ -28,11 +27,11 @@ function getStoreLogo(name: string | null | undefined): string | undefined {
 }
 
 interface ProductInfoModalProps {
-  product: Product | null
+  product: any | null
   categoryName?: string
   storeName?: string
   onClose: () => void
-  onAddToCart?: (product: Product, quantity: number) => void
+  onAddToCart?: (product: any, quantity: number) => void
 }
 
 export default function ProductInfoModal({
@@ -111,10 +110,7 @@ export default function ProductInfoModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative z-10 w-full max-w-lg rounded-2xl p-6 bg-background text-foreground shadow-xl">
         <button
@@ -135,16 +131,10 @@ export default function ProductInfoModal({
         <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
 
         {categoryName && (
-          <p className="text-sm text-muted-foreground mb-1">
-            Kategooria: {categoryName}
-          </p>
+          <p className="text-sm text-muted-foreground mb-1">Kategooria: {categoryName}</p>
         )}
 
-        {storeName && (
-          <p className="text-sm text-muted-foreground mb-1">
-            Pood: {storeName}
-          </p>
-        )}
+        {storeName && <p className="text-sm text-muted-foreground mb-1">Pood: {storeName}</p>}
 
         {(() => {
           const rawPrice = (product as any).price as number | null
@@ -193,16 +183,11 @@ export default function ProductInfoModal({
             return null
           })()
 
-          const ppu2 =
-            ppu != null && Number.isFinite(Number(ppu))
-              ? Number(ppu).toFixed(2)
-              : null
+          const ppu2 = ppu != null && Number.isFinite(Number(ppu)) ? Number(ppu).toFixed(2) : null
 
           return (
             <div className="mb-4 flex flex-col gap-0.5">
-              {price2 && (
-                <p className="text-lg font-medium">{price2} €</p>
-              )}
+              {price2 && <p className="text-lg font-medium">{price2} €</p>}
               {ppu2 && qtyVal != null && (
                 <p className="text-xs text-muted-foreground">
                   {ppu2} € / {qtyUnit} · pakend: {qtyVal} {qtyUnit}
@@ -492,14 +477,6 @@ export default function ProductInfoModal({
               </ul>
             )
           })()}
-
-          {priceComparison &&
-            priceComparison.comparisons.length === 0 &&
-            !comparisonLoading && (
-              <p className="text-sm text-muted-foreground">
-                Teistes poodides vastavat toodet ei leitud.
-              </p>
-            )}
         </div>
 
         <div className="flex items-center gap-3 mb-6">

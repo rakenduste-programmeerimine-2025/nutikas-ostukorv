@@ -33,7 +33,7 @@ CONFIG: Dict[str, Any] = {
             "url": "https://coophaapsalu.ee/tootekategooria/pagaritooted/leivad/",
         },
         "Rimi": {
-            "enabled": False,
+            "enabled": True,
             "scraper": "rimi",
             "url": "https://www.rimi.ee/epood/ee/tooted/leivad-saiad-kondiitritooted/c/SH-6",
         },
