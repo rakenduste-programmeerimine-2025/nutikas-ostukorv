@@ -11,6 +11,14 @@ STORE_ID = 1
 URL = "https://www.selver.ee/puu-ja-koogiviljad"
 BASE_URL = "https://www.selver.ee"
 
+# Selver quirk: for the veg category there are 14 real product pages, but
+# higher ?page=N values (e.g. 15, 16, …) just repeat the first page. To avoid
+# relying on fragile DOM selectors, we cap pagination by URL here.
+MAX_PAGES_BY_URL: Dict[str, int] = {
+    URL: 14,
+}
+DEFAULT_MAX_PAGES = 20  # safety cap for other Selver URLs
+
 
 def parse_price_and_unit(text: str | None) -> tuple[float | None, str | None]:
     """Parse a price string from Selver into (value, unit).
@@ -88,10 +96,19 @@ async def scrape_selver(
         )
         page = await browser.new_page()
 
-        current_url = url
+        # Selver uses classic numbered pagination. Instead of trying to click the
+        # "next" UI control (which is brittle to markup/ARIA changes), we iterate
+        # over page numbers via the `?page=` query parameter.
+        max_pages = MAX_PAGES_BY_URL.get(url, DEFAULT_MAX_PAGES)
 
-        while True:
-            print("Opening Selver", current_url)
+        for page_index in range(1, max_pages + 1):
+            if page_index == 1:
+                current_url = url
+            else:
+                separator = "&" if "?" in url else "?"
+                current_url = f"{url}{separator}page={page_index}"
+
+            print(f"Opening Selver page {page_index}/{max_pages}: {current_url}")
             await page.goto(current_url, timeout=60000, wait_until="networkidle")
 
             # Scroll to trigger lazy loading / infinite scroll on the current page
@@ -109,8 +126,8 @@ async def scrape_selver(
 
             if count_cards == 0:
                 # No products at all on this page – stop.
+                print(f"No products on Selver page {page_index}, stopping early.")
                 break
-
             for i in range(count_cards):
                 card = cards.nth(i)
 
@@ -119,7 +136,7 @@ async def scrape_selver(
                 if name:
                     name = name.strip()
 
-                # Selver currently exposes prices via ProductPrice__unit-price (e.g. "0,74 d/kg").
+                # Selver currently exposes prices via ProductPrice__unit-price (e.g. "0,74 €/kg").
                 # There can be multiple unit-price spans (e.g. original + discounted), so
                 # take the first one. Fall back to Price__main if needed.
                 unit_prices = card.locator(".ProductPrice__unit-price")
@@ -132,7 +149,7 @@ async def scrape_selver(
                 unit_price, unit_from_price = parse_price_and_unit(price_text)
 
                 # For loose items (e.g. fruit/veg), price on the site is already
-                # a unit price (d/kg, d/l, d/tk). We treat that as price_per_unit
+                # a unit price (€/kg, €/l, €/tk). We treat that as price_per_unit
                 # and assume a notional quantity of 1 unit for comparison.
                 quantity_value_name, quantity_unit_name = parse_quantity_from_name(name or "")
 
@@ -189,27 +206,6 @@ async def scrape_selver(
                         "global_product_id": None,
                     }
                 )
-
-            # Try to find a "next page" control. Adjust selectors here if Selver changes
-            # its pagination markup.
-            next_btn = page.locator(
-                "a[rel='next'], button[aria-label*='Jdrgmine'], .pagination a.next"
-            ).first
-            if not await next_btn.count():
-                print("No next page 4a9 done.")
-                break
-
-            href = await next_btn.get_attribute("href")
-            if href:
-                if href.startswith("http"):
-                    current_url = href
-                else:
-                    current_url = BASE_URL + href
-            else:
-                # Fallback: click the button (if it is a button) and rely on URL change
-                await next_btn.click()
-                await page.wait_for_load_state("networkidle")
-                current_url = page.url
 
         await browser.close()
         return rows
