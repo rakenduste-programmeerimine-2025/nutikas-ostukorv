@@ -5,6 +5,12 @@ import FilterBar from '@/components/ui/filter-bar'
 import ProductInfoModal from '@/components/ui/product-info-modal'
 import ProductCard from '@/components/product-card'
 import { Product } from '@/components/product-card'
+import { groupProducts, type AnyProduct, type ProductGroup } from '@/lib/product-grouping'
+
+function toNumber(value: unknown): number | null {
+  const n = Number(value as any)
+  return Number.isFinite(n) ? n : null
+}
 
 export default function SearchResultsClient({
   initialProducts,
@@ -16,7 +22,7 @@ export default function SearchResultsClient({
   stores: any[]
   initialQuery: string
 }) {
-  const categoriesMap = React.useMemo(
+  const categoriesNameMap = React.useMemo(
     () => Object.fromEntries((categories || []).map((c: any) => [String(c.id), c.name])),
     [categories]
   )
@@ -34,26 +40,49 @@ export default function SearchResultsClient({
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [page, setPage] = useState(1)
 
-  const filteredAll = useMemo(() => {
-    return initialProducts
-      .filter(p => (selectedCategory ? String(p.category_id) === selectedCategory : true))
-      .filter(p => (selectedStore ? String(p.store_id) === selectedStore : true))
-      .filter(p => (minPrice ? Number(p.price) >= Number(minPrice) : true))
-      .filter(p => (maxPrice ? Number(p.price) <= Number(maxPrice) : true))
+  const groups = useMemo(
+    () => groupProducts(initialProducts as AnyProduct[], categories),
+    [initialProducts, categories]
+  )
+
+  const filtered = useMemo(() => {
+    const meetsPrice = (p: AnyProduct): boolean => {
+      const price = toNumber(p.price)
+      if (price == null) return false
+      if (minPrice && price < Number(minPrice)) return false
+      if (maxPrice && price > Number(maxPrice)) return false
+      return true
+    }
+
+    const meetsStore = (p: AnyProduct): boolean => {
+      if (!selectedStore) return true
+      return String(p.store_id) === selectedStore
+    }
+
+    return groups
+      .filter(g =>
+        selectedCategory ? String(g.categoryId) === selectedCategory : true
+      )
+      .filter(g =>
+        // At least one product in the group must be in the selected store and price range.
+        g.items.some(p => meetsStore(p) && meetsPrice(p))
+      )
       .sort((a, b) => {
-        if (sort === 'price_asc') return Number(a.price) - Number(b.price)
-        if (sort === 'price_desc') return Number(b.price) - Number(a.price)
-        return 0
+        const metric = (x: ProductGroup): number => {
+          const rep = x.representative
+          const ppu = toNumber((rep as any).price_per_unit)
+          const price = toNumber(rep.price)
+          return ppu ?? price ?? Number.POSITIVE_INFINITY
+        }
+        const am = metric(a)
+        const bm = metric(b)
+
+        if (sort === 'price_desc') return bm - am
+        // default price_asc
+        return am - bm
       })
-  }, [initialProducts, selectedCategory, selectedStore, minPrice, maxPrice, sort])
-
-  const totalPages = Math.max(1, Math.ceil(filteredAll.length / limit))
-
-  const visible = filteredAll.slice((page - 1) * limit, page * limit)
-
-  function goto(p: number) {
-    setPage(Math.min(Math.max(1, p), totalPages))
-  }
+      .slice(0, limit)
+  }, [groups, selectedCategory, selectedStore, minPrice, maxPrice, sort, limit])
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -102,19 +131,40 @@ export default function SearchResultsClient({
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {visible.map(p => (
-          <div
-            key={p.id}
-            className="cursor-pointer transition hover:scale-[1.01]"
-            onClick={() => setSelectedProduct(p)}
-          >
-            <ProductCard
-              product={p}
-              categoryName={categoriesMap[String(p.category_id)]}
-              storeName={storesMap[String(p.store_id)]}
-            />
-          </div>
-        ))}
+        {filtered.map(group => {
+          const rep = group.representative
+          const categoryName =
+            group.categoryId != null
+              ? categoriesNameMap[String(group.categoryId)]
+              : undefined
+
+          const storeNames = Array.from(
+            new Set(
+              group.items
+                .map(p => storesMap[String((p as any).store_id)] as string | undefined)
+                .filter((n): n is string => Boolean(n))
+            )
+          )
+
+          return (
+            <div key={group.key} className="transition hover:scale-[1.01]">
+              <div onClick={() => setSelectedProduct(rep)}>
+                <ProductCard
+                  product={rep}
+                  categoryName={categoryName}
+                  storeNames={storeNames}
+                />
+              </div>
+              <div className="mt-2 text-sm text-muted-foreground flex items-center justify-between">
+                {group.items.length > 1 && (
+                  <span className="font-medium">
+                    {group.items.length} poodi
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {totalPages > 1 && (

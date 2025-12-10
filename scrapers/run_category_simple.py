@@ -22,25 +22,25 @@ from .selver import scrape_and_upsert_selver
 
 # Logical category key -> Supabase category slug and per‑store URLs.
 CONFIG: Dict[str, Any] = {
-    "category_key": "kastmed",  # change this
-    "category_slug": "kastmed",  # must match slug in public.category
+    "category_key": "pagaritooted",  # change this
+    "category_slug": "pagaritooted",  # must match slug in public.category
     "stores": {
         # store_name in DB -> scraper + URL
         # Enable/disable stores by commenting them in/out.
         "Coop": {
             "enabled": True,
             "scraper": "coop",
-            "url": "https://coophaapsalu.ee/tootekategooria/purgitoit/kulmad-kastmed-purgitoit/",
+            "url": "https://coophaapsalu.ee/tootekategooria/pagaritooted/leivad/",
         },
         "Rimi": {
             "enabled": True,
             "scraper": "rimi",
-            "url": "https://www.rimi.ee/epood/ee/tooted/kauasailivad-toidukaubad/kastmed-ketsupid-sinep-ja-madaroigas/c/SH-13-6",
+            "url": "https://www.rimi.ee/epood/ee/tooted/leivad-saiad-kondiitritooted/c/SH-6",
         },
         "Selver": {
             "enabled": True,
             "scraper": "selver",
-            "url": "https://www.selver.ee/kastmed-olid/ketsupid-tomatipastad-kastmed",
+            "url": "https://www.selver.ee/leivad-saiad-kondiitritooted/saiad",
         },
     },
 }
