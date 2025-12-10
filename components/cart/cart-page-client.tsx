@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Badge } from '@/components/ui/badge'
 
 type StoreRow = {
   id: number
@@ -236,6 +237,23 @@ export default function CartPageClient({ stores }: CartPageClientProps) {
     return totals
   }, [items, comparisons, overrides, stores])
 
+  const recommendedStoreId = React.useMemo(() => {
+    let bestId: number | null = null
+    let bestTotal = Number.POSITIVE_INFINITY
+
+    for (const store of stores) {
+      const stats = storeTotals[store.id]
+      if (!stats || stats.total <= 0) continue
+
+      if (stats.total < bestTotal) {
+        bestTotal = stats.total
+        bestId = store.id
+      }
+    }
+
+    return Number.isFinite(bestTotal) ? bestId : null
+  }, [stores, storeTotals])
+
   const handleChooseOverride = React.useCallback(
     (productId: number, storeId: number, entry: PriceComparisonEntry) => {
       setOverrides(prev => ({
@@ -257,31 +275,46 @@ export default function CartPageClient({ stores }: CartPageClientProps) {
   return (
     <div className="w-full flex flex-col gap-6">
       {/* Store summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {stores.map(store => {
           const stats = storeTotals[store.id]
           const isActive = selectedStoreId === store.id
+          const isRecommended = recommendedStoreId === store.id
 
           return (
             <button
               key={store.id}
               type="button"
               onClick={() => setSelectedStoreId(store.id)}
-              className={`flex flex-col items-start rounded-xl border p-4 text-left transition-colors ${
-                isActive
-                  ? 'border-primary bg-primary/5 shadow-sm'
-                  : 'border-border hover:bg-muted/60'
+              className={`group relative flex flex-col items-start justify-between gap-2 rounded-xl border bg-card/80 p-4 text-left text-sm shadow-sm transition hover:border-primary hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
+                isActive ? 'border-primary bg-primary/5' : ''
               }`}
             >
-              <span className="text-sm font-semibold">{store.name ?? 'Pood'}</span>
-              <span className="mt-2 text-lg font-bold">
-                {stats?.total ? `${stats.total.toFixed(2)} €` : '—'}
-              </span>
-              {stats?.missing > 0 && (
-                <span className="mt-1 text-xs text-amber-600">
-                  Puudub {stats.missing} toodet sellest poest
+              <div className="flex w-full items-center justify-between gap-2">
+                <span className="font-semibold tracking-tight">
+                  {store.name ?? 'Pood'}
                 </span>
-              )}
+                {isRecommended && stats?.total > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="border-none bg-emerald-500/90 px-2 py-0 text-[11px] text-emerald-50 shadow-sm"
+                  >
+                    Soovitatud
+                  </Badge>
+                )}
+              </div>
+
+              <div className="mt-1 flex w-full items-baseline justify-between gap-3">
+                <span className="text-xl font-bold tracking-tight">
+                  {stats?.total ? `${stats.total.toFixed(2)} €` : '—'}
+                </span>
+                {stats?.missing > 0 && (
+                  <span className="text-xs text-amber-700 dark:text-amber-400">
+                    Puudub {stats.missing} toode
+                    {stats.missing > 1 ? 't' : ''} sellest poest
+                  </span>
+                )}
+              </div>
             </button>
           )
         })}
@@ -289,7 +322,7 @@ export default function CartPageClient({ stores }: CartPageClientProps) {
 
       {loadingComparisons && (
         <p className="text-xs text-muted-foreground">
-          Laen hinnav\u00f5rdlust ostukorvi toodetele...
+          Laen hinnavõrdlust ostukorvi toodetele...
         </p>
       )}
 
@@ -298,9 +331,9 @@ export default function CartPageClient({ stores }: CartPageClientProps) {
       )}
 
       {/* Cart table */}
-      <div className="w-full overflow-x-auto rounded-xl border bg-card/60">
-        <table className="min-w-full text-sm">
-          <thead className="border-b bg-muted/60">
+      <div className="w-full overflow-x-auto rounded-xl border bg-card/80 shadow-sm">
+        <table className="min-w-full text-sm align-top">
+          <thead className="sticky top-0 z-10 border-b bg-muted/80 backdrop-blur">
             <tr className="[&>th]:px-3 [&>th]:py-2 text-left align-bottom">
               <th className="w-[40%]">Toode</th>
               <th className="w-[10%]">Kogus</th>
@@ -386,12 +419,16 @@ function CartRow({
   }, [perStore])
 
   const baseStoreId = (item.product as any).store_id as number | null
+  const baseStoreName =
+    baseStoreId != null
+      ? stores.find(s => s.id === baseStoreId)?.name ?? `Pood #${baseStoreId}`
+      : null
 
   return (
     <tr className="align-top">
-      <td className="px-3 py-3">
+      <td className="pl-8 pr-3 py-3">
         <div className="flex gap-3 items-start">
-          <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded border bg-white">
+          <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded border bg-white">
             <img
               src={item.product.image_url || '/placeholder.png'}
               alt={item.product.name}
@@ -399,11 +436,13 @@ function CartRow({
             />
           </div>
           <div className="flex flex-col gap-1">
-            <div className="font-medium text-sm leading-snug">
+            <div className="text-sm font-medium leading-snug">
               {item.product.name}
             </div>
             <div className="text-xs text-muted-foreground">
-              Lisatud poest #{baseStoreId ?? '??'}
+              {baseStoreName
+                ? `Lisatud poest ${baseStoreName}`
+                : 'Lisatud poe info puudub'}
             </div>
           </div>
         </div>
@@ -423,7 +462,7 @@ function CartRow({
                 onQtyChange(n)
               }
             }}
-            className="w-20 rounded border px-2 py-1 text-xs"
+            className="h-8 w-20 rounded-md border bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
           />
           <button
             type="button"
@@ -441,85 +480,100 @@ function CartRow({
         const selectedOverrideId = override?.product?.id as number | undefined
         const isExact = info.exact && !info.missing
 
-        // Base visual state: every cell has a border; variants change color only.
         let boxClasses =
-          'inline-flex h-[88px] w-[180px] flex-col items-stretch justify-between gap-1 rounded-md border px-3 py-2 text-right text-xs'
+          'group relative my-3 flex min-h-[112px] min-w-[210px] flex-col justify-between gap-1 rounded-lg border bg-background/80 px-4 py-3 text-xs shadow-sm'
 
         if (info.missing && !selectedOverrideId) {
-          // No same item in this store and no override chosen yet.
-          boxClasses += ' border-amber-500/70 bg-amber-500/10 text-amber-50'
+          boxClasses += ' border-dashed border-amber-500/70 bg-amber-500/5'
         } else if (selectedOverrideId) {
-          // User picked a replacement for this store.
-          boxClasses += ' border-primary/70 bg-primary/10'
-        } else if (isExact) {
-          // Exact same item as base product.
-          boxClasses += ' border-white/70 bg-muted/30'
+          boxClasses += ' border-primary/80 bg-primary/5'
+        } else if (info.unitPrice != null || info.lineTotal != null) {
+          // Neutral style for stores where the product exists; only the best price gets a strong green highlight.
+          boxClasses += ' border-border bg-card/80'
         } else {
-          // Fallback / generic style.
-          boxClasses += ' border-border bg-background/10'
+          boxClasses += ' border-border/80 bg-muted/40'
         }
 
         if (isActive) boxClasses += ' ring-1 ring-primary/40'
-        if (isCheapest) boxClasses += ' shadow-[0_0_0_1px_rgba(59,130,246,0.7)]'
+        if (isCheapest && info.lineTotal != null)
+          boxClasses += ' shadow-[0_0_0_1px_rgba(16,185,129,0.9)]'
 
         const chosen = info.chosen
-        const chosenProduct = chosen?.product
+        const chosenProduct = chosen?.product ?? item.product
+
+        const statusLabel = (() => {
+          if (selectedOverrideId) return 'Asendustoode'
+          if (info.missing && info.similar.length === 0) return 'Toode puudub'
+          if (info.missing && info.similar.length > 0)
+            return 'Toode puudub, saadaval asendused'
+          // For exact matches we don't show an extra text label to keep the UI cleaner.
+          return null
+        })()
 
         return (
-          <td key={store.id} className="px-3 py-3 align-top text-right">
+          <td key={store.id} className="px-3 py-4 align-top">
             <div className={boxClasses}>
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex flex-col items-end gap-0.5">
-                  {info.lineTotal != null ? (
-                    <span className="text-sm font-semibold">
-                      {info.lineTotal.toFixed(2)} €
-                    </span>
-                  ) : (
-                    <span className="text-xs opacity-80">Puudub hind</span>
-                  )}
-
-                  {info.unitPrice != null && (
-                    <span className="text-[11px] opacity-80">
-                      {info.unitPrice.toFixed(2)} € / tk
-                    </span>
-                  )}
-
-                  {info.missing && info.similar.length === 0 && (
-                    <span className="mt-1 text-[11px] font-medium">
-                      Seda toodet selles poes ei leitud.
-                    </span>
-                  )}
+              <div className="flex items-stretch gap-3">
+                {/* Left: product image */}
+                <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded border bg-white">
+                  <img
+                    src={chosenProduct?.image_url || '/placeholder.png'}
+                    alt={chosenProduct?.name}
+                    className="h-full w-full object-contain"
+                  />
                 </div>
 
-                {chosenProduct && (
-                  <div className="flex flex-col items-end gap-1 text-[10px] max-w-[80px]">
-                    <div className="h-8 w-8 overflow-hidden rounded border bg-white self-end">
-                      <img
-                        src={chosenProduct.image_url || '/placeholder.png'}
-                        alt={chosenProduct.name}
-                        className="h-full w-full object-contain"
-                      />
+                {/* Right: name on top, quantity + price on bottom */}
+                <div className="flex min-w-0 flex-1 flex-col justify-between gap-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-xs font-medium leading-snug">
+                        {chosenProduct?.name}
+                      </div>
+                      {statusLabel && (
+                        <div className="mt-0.5 text-[11px] text-muted-foreground">
+                          {statusLabel}
+                        </div>
+                      )}
                     </div>
-                    <span className="truncate text-right leading-snug">
-                      {chosenProduct.name}
-                    </span>
+
+                    {isCheapest && info.lineTotal != null && (
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 border-none bg-emerald-500/90 px-2 py-0 text-[10px] text-emerald-50 shadow-sm"
+                      >
+                        Parim hind
+                      </Badge>
+                    )}
                   </div>
-                )}
+
+                  <div className="flex items-end justify-between gap-2 text-xs">
+                    {info.unitPrice != null ? (
+                      <span className="text-[11px] text-muted-foreground">
+                        {info.unitPrice.toFixed(2)} € / tk
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground">Puudub hind</span>
+                    )}
+
+                    {info.lineTotal != null && (
+                      <span className="text-sm font-semibold">
+                        {info.lineTotal.toFixed(2)} €
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              {info.similar.length > 0 && (
-                <div className="mt-1 flex flex-col items-end gap-1">
-                  <span className="text-[11px] text-muted-foreground">
-                    Sarnased tooted:
-                  </span>
-
+              {info.similar.length > 0 && !(isExact && !selectedOverrideId) && (
+                <div className="mt-2 flex justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1 rounded border border-border bg-background px-2 py-1 text-[11px] hover:bg-muted"
+                        className="inline-flex items-center gap-1 rounded-md border border-border bg-background/80 px-2 py-1 text-[11px] font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                       >
-                        <span className="truncate max-w-[130px] text-left">
+                        <span className="max-w-[140px] truncate text-left">
                           {selectedOverrideId
                             ? 'Asendustoode valitud'
                             : 'Vali asendustoode'}
