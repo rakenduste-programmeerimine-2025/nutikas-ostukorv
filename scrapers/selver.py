@@ -89,6 +89,12 @@ async def scrape_selver(
 
     rows: List[Dict[str, Any]] = []
 
+    # Track all products we've seen (name + image) across pages. Selver starts
+    # repeating earlier pages (e.g. page 1) once you go past the real last
+    # page (page 14 for veg). If an entire page only contains products we've
+    # already seen, we stop paginating.
+    seen_product_keys: set[str] = set()
+
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(
             headless=True,
@@ -128,6 +134,10 @@ async def scrape_selver(
                 # No products at all on this page – stop.
                 print(f"No products on Selver page {page_index}, stopping early.")
                 break
+
+            # Count how many new (not previously seen) products we find on this page.
+            page_new_products = 0
+
             for i in range(count_cards):
                 card = cards.nth(i)
 
@@ -193,6 +203,14 @@ async def scrape_selver(
                     data_src = await img.get_attribute("data-src")
                     image_url = data_src or src
 
+                # Build a simple key for this product (name + image). If we've
+                # already seen it on a previous page, skip adding it again.
+                product_key = f"{(name or '').strip()}|{image_url or ''}"
+                if product_key in seen_product_keys:
+                    continue
+                seen_product_keys.add(product_key)
+                page_new_products += 1
+
                 rows.append(
                     {
                         "category_id": category_id,
@@ -206,6 +224,15 @@ async def scrape_selver(
                         "global_product_id": None,
                     }
                 )
+
+            # If this page did not yield any new products, Selver has started
+            # repeating earlier pages (e.g. page 1 again at page=15). Stop.
+            if page_new_products == 0:
+                print(
+                    f"No new products found on Selver page {page_index}, "
+                    "stopping pagination."
+                )
+                break
 
         await browser.close()
         return rows
