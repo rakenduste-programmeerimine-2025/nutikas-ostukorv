@@ -29,12 +29,14 @@ export default function SearchableProductGrid({
           const multi = storeNamesByProductId?.[pid]
           const singleStore = storesMap[String((p as any).store_id)]?.name
 
+          const storeNameProp = multi && multi.length > 0 ? multi : singleStore
+
           return (
             <div key={p.id} onClick={() => onSelectProduct(p)} className="cursor-pointer">
               <ProductCard
                 product={p}
                 categoryName={categoryName}
-                storeName={multi?.[0] || singleStore}
+                storeName={storeNameProp}
               />
             </div>
           )
