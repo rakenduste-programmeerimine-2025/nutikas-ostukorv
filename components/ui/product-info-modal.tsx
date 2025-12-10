@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { Product } from '@/components/product-card'
 import { useCart } from '@/components/cart/cart-context'
 import { Button } from '@/components/ui/button'
 
 interface ProductInfoModalProps {
-  product: Product | null
+  product: any | null
   categoryName?: string
   storeName?: string
   onClose: () => void
-  onAddToCart?: (product: Product, quantity: number) => void
+  onAddToCart?: (product: any, quantity: number) => void
 }
 
 export default function ProductInfoModal({
@@ -89,10 +88,7 @@ export default function ProductInfoModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative z-10 w-full max-w-md rounded-2xl p-6 bg-background text-foreground shadow-xl">
         <button
@@ -113,16 +109,10 @@ export default function ProductInfoModal({
         <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
 
         {categoryName && (
-          <p className="text-sm text-muted-foreground mb-1">
-            Kategooria: {categoryName}
-          </p>
+          <p className="text-sm text-muted-foreground mb-1">Kategooria: {categoryName}</p>
         )}
 
-        {storeName && (
-          <p className="text-sm text-muted-foreground mb-1">
-            Pood: {storeName}
-          </p>
-        )}
+        {storeName && <p className="text-sm text-muted-foreground mb-1">Pood: {storeName}</p>}
 
         {(() => {
           const rawPrice = (product as any).price as number | null
@@ -143,16 +133,11 @@ export default function ProductInfoModal({
             return null
           })()
 
-          const ppu2 =
-            ppu != null && Number.isFinite(Number(ppu))
-              ? Number(ppu).toFixed(2)
-              : null
+          const ppu2 = ppu != null && Number.isFinite(Number(ppu)) ? Number(ppu).toFixed(2) : null
 
           return (
             <div className="mb-4 flex flex-col gap-0.5">
-              {price2 && (
-                <p className="text-lg font-medium">{price2} €</p>
-              )}
+              {price2 && <p className="text-lg font-medium">{price2} €</p>}
               {ppu2 && qtyVal != null && (
                 <p className="text-xs text-muted-foreground">
                   {ppu2} € / {qtyUnit} · pakend: {qtyVal} {qtyUnit}
@@ -169,145 +154,132 @@ export default function ProductInfoModal({
             <p className="text-sm text-muted-foreground">Laen hinnavõrdlust...</p>
           )}
 
-          {comparisonError && (
-            <p className="text-sm text-destructive">{comparisonError}</p>
-          )}
-
-          {priceComparison && priceComparison.comparisons.length > 0 && (() => {
-            const comparisons: any[] = priceComparison.comparisons ?? []
-            const sameItems = comparisons.filter(c => c.isSameItem)
-            const similarItems = comparisons
-              .filter(c => !c.isSameItem)
-              .slice(0, 5)
-
-            const renderItem = (c: any, idx: number) => {
-              const storeLabel = c.store?.name ?? 'Tundmatu pood'
-              const productName =
-                (c.product?.name as string | undefined) ?? 'Tundmatu toode'
-              const quantityValue = c.product?.quantity_value as number | null
-              const quantityUnit =
-                (c.product?.quantity_unit as string | null) ?? 'ühik'
-              const rawPrice = (c.price as number | null) ?? (c.product?.price as number | null)
-              const rawPpu = c.pricePerUnit as number | null
-
-              const price2 =
-                rawPrice != null && Number.isFinite(Number(rawPrice))
-                  ? Number(rawPrice).toFixed(2)
-                  : null
-              const ppu2 =
-                rawPpu != null && Number.isFinite(Number(rawPpu))
-                  ? Number(rawPpu).toFixed(2)
-                  : null
-
-              const productId = Number(c.product?.id)
-
-              const currentQty =
-                cart && Number.isFinite(productId)
-                  ? cart.items.find((it: any) => it.product.id === productId)?.quantity ?? 0
-                  : 0
-
-              return (
-                <li
-                  key={c.product?.id ?? idx}
-                  className="flex flex-col gap-1 border-b last:border-b-0 pb-2"
-                >
-                  {/* First row: product name (primary) + price + add button */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold truncate">
-                          {productName}
-                        </span>
-                        <span className="text-right font-semibold whitespace-nowrap">
-                          {price2
-                            ? `${price2} €`
-                            : ppu2
-                            ? `${ppu2} € / ${quantityUnit}`
-                            : '-'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {Number.isFinite(productId) && (
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="outline"
-                        className="h-7 w-7 rounded-full border-green-500 text-green-600 hover:bg-green-500 hover:text-white flex-shrink-0"
-                        onClick={() => {
-                          if (!cart) return
-                          const usablePrice =
-                            rawPrice != null
-                              ? Number(rawPrice)
-                              : rawPpu != null
-                              ? Number(rawPpu)
-                              : 0
-                          cart.addItem(
-                            {
-                              id: productId,
-                              name: productName,
-                              price: usablePrice,
-                              image_url: c.product?.image_url ?? undefined,
-                            } as any,
-                            1
-                          )
-                        }}
-                        aria-label={`Lisa korvi: ${productName}`}
-                      >
-                        <span className="text-base font-bold">+</span>
-                      </Button>
-                    )}
-                  </div>
-
-                  {/* Second row: store + quantity */}
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="truncate pr-2">{storeLabel}</span>
-                    <div className="flex items-center gap-2 whitespace-nowrap">
-                      <span>
-                        {ppu2
-                          ? `${ppu2} € / ${quantityUnit}`
-                          : quantityValue != null
-                          ? `${quantityValue} ${quantityUnit}`
-                          : ''}
-                      </span>
-                      {currentQty > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-emerald-600/10 text-emerald-500 text-[10px]">
-                          x{currentQty}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              )
-            }
-
-            return (
-              <ul className="space-y-2 text-sm">
-                {sameItems.length > 0 && (
-                  <>
-                    {sameItems.map((c, idx) => renderItem(c, idx))}
-                    {similarItems.length > 0 && (
-                      <li className="pt-2 text-xs text-muted-foreground font-semibold uppercase tracking-wide">
-                        Sarnased tooted
-                      </li>
-                    )}
-                    {similarItems.map((c, idx) => renderItem(c, idx))}
-                  </>
-                )}
-
-                {sameItems.length === 0 &&
-                  similarItems.map((c, idx) => renderItem(c, idx))}
-              </ul>
-            )
-          })()}
+          {comparisonError && <p className="text-sm text-destructive">{comparisonError}</p>}
 
           {priceComparison &&
-            priceComparison.comparisons.length === 0 &&
-            !comparisonLoading && (
-              <p className="text-sm text-muted-foreground">
-                Teistes poodides vastavat toodet ei leitud.
-              </p>
-            )}
+            priceComparison.comparisons.length > 0 &&
+            (() => {
+              const comparisons: any[] = priceComparison.comparisons ?? []
+              const sameItems = comparisons.filter(c => c.isSameItem)
+              const similarItems = comparisons.filter(c => !c.isSameItem).slice(0, 5)
+
+              const renderItem = (c: any, idx: number) => {
+                const storeLabel = c.store?.name ?? 'Tundmatu pood'
+                const productName = (c.product?.name as string | undefined) ?? 'Tundmatu toode'
+                const quantityValue = c.product?.quantity_value as number | null
+                const quantityUnit = (c.product?.quantity_unit as string | null) ?? 'ühik'
+                const rawPrice = (c.price as number | null) ?? (c.product?.price as number | null)
+                const rawPpu = c.pricePerUnit as number | null
+
+                const price2 =
+                  rawPrice != null && Number.isFinite(Number(rawPrice))
+                    ? Number(rawPrice).toFixed(2)
+                    : null
+                const ppu2 =
+                  rawPpu != null && Number.isFinite(Number(rawPpu))
+                    ? Number(rawPpu).toFixed(2)
+                    : null
+
+                const productId = Number(c.product?.id)
+
+                const currentQty =
+                  cart && Number.isFinite(productId)
+                    ? (cart.items.find((it: any) => it.product.id === productId)?.quantity ?? 0)
+                    : 0
+
+                return (
+                  <li
+                    key={c.product?.id ?? idx}
+                    className="flex flex-col gap-1 border-b last:border-b-0 pb-2"
+                  >
+                    {/* First row: product name (primary) + price + add button */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold truncate">{productName}</span>
+                          <span className="text-right font-semibold whitespace-nowrap">
+                            {price2 ? `${price2} €` : ppu2 ? `${ppu2} € / ${quantityUnit}` : '-'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {Number.isFinite(productId) && (
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="outline"
+                          className="h-7 w-7 rounded-full border-green-500 text-green-600 hover:bg-green-500 hover:text-white flex-shrink-0"
+                          onClick={() => {
+                            if (!cart) return
+                            const usablePrice =
+                              rawPrice != null
+                                ? Number(rawPrice)
+                                : rawPpu != null
+                                  ? Number(rawPpu)
+                                  : 0
+                            cart.addItem(
+                              {
+                                id: productId,
+                                name: productName,
+                                price: usablePrice,
+                                image_url: c.product?.image_url ?? undefined,
+                              } as any,
+                              1
+                            )
+                          }}
+                          aria-label={`Lisa korvi: ${productName}`}
+                        >
+                          <span className="text-base font-bold">+</span>
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Second row: store + quantity */}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="truncate pr-2">{storeLabel}</span>
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <span>
+                          {ppu2
+                            ? `${ppu2} € / ${quantityUnit}`
+                            : quantityValue != null
+                              ? `${quantityValue} ${quantityUnit}`
+                              : ''}
+                        </span>
+                        {currentQty > 0 && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-emerald-600/10 text-emerald-500 text-[10px]">
+                            x{currentQty}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                )
+              }
+
+              return (
+                <ul className="space-y-2 text-sm">
+                  {sameItems.length > 0 && (
+                    <>
+                      {sameItems.map((c, idx) => renderItem(c, idx))}
+                      {similarItems.length > 0 && (
+                        <li className="pt-2 text-xs text-muted-foreground font-semibold uppercase tracking-wide">
+                          Sarnased tooted
+                        </li>
+                      )}
+                      {similarItems.map((c, idx) => renderItem(c, idx))}
+                    </>
+                  )}
+
+                  {sameItems.length === 0 && similarItems.map((c, idx) => renderItem(c, idx))}
+                </ul>
+              )
+            })()}
+
+          {priceComparison && priceComparison.comparisons.length === 0 && !comparisonLoading && (
+            <p className="text-sm text-muted-foreground">
+              Teistes poodides vastavat toodet ei leitud.
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-3 mb-6">
