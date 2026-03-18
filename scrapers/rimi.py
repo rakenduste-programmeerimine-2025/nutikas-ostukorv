@@ -167,7 +167,7 @@ async def scrape_rimi(
                 "a[aria-label='Järgmine'], a[aria-label*='Järgmine'], a[rel='next']"
             )
             if not await next_btn.count():
-                print("No next button 4a9 done.")
+                print("No next button done.")
                 break
 
             href = await next_btn.first.get_attribute("href")
