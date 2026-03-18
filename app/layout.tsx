@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
+import { GeistSans } from 'geist/font/sans'
 import { ThemeProvider } from 'next-themes'
 import './globals.css'
 import CartProvider from '@/components/cart/cart-context'
@@ -15,12 +15,6 @@ export const metadata: Metadata = {
   description: 'Poodide hindade võrdlemise rakendus',
 }
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  display: 'swap',
-  subsets: ['latin'],
-})
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+      <body className={`${GeistSans.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
